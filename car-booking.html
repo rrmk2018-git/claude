@@ -160,10 +160,10 @@ tr:hover td{background:#f9fafb}
     <div class="card">
       <div class="conf">
         <div class="ci">🎉</div>
-        <div class="ctt">ยื่นคำขอจองสำเร็จ!</div>
+        <div class="ctt">จองรถสำเร็จ! ✅ อนุมัติแล้ว</div>
         <p style="opacity:.85;margin-bottom:8px">รหัสการจองของท่าน</p>
         <div class="cr" id="success-id"></div>
-        <p style="opacity:.75;font-size:12px;margin-top:6px">กรุณาแจ้งรหัสนี้แก่แผนกที่เกี่ยวข้องเพื่ออนุมัติการจอง</p>
+        <p style="opacity:.75;font-size:12px;margin-top:6px">การจองได้รับการอนุมัติอัตโนมัติ รถพร้อมใช้งานตามวันที่ที่ระบุ</p>
       </div>
       <div id="success-details" style="margin-top:16px"></div>
       <div style="margin-top:20px;text-align:center">
@@ -434,10 +434,10 @@ function handleSubmit(e){
     purpose:document.getElementById('f-purpose').value,
     passengers:document.getElementById('f-pax').value,
     notes:document.getElementById('f-notes').value,
-    status:'pending', createdAt:new Date().toISOString()
+    status:'approved', createdAt:new Date().toISOString()
   };
   bookings.unshift(b); saveData();
-  toast(`ยื่นคำขอจองสำเร็จ! รหัส: ${b.id}`,'success');
+  toast(`จองรถสำเร็จ! อนุมัติแล้ว รหัส: ${b.id}`,'success');
   showSuccess(b);
 }
 
