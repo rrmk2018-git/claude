@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      min-height: 100vh;
+      color: #0f172a;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 60px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .topbar-title span { color: #667eea; }
+
+    .topbar-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #667eea;
+      background: #eef2ff;
+      padding: 7px 16px;
+      border-radius: 40px;
+      border: 1.5px solid #c7d2fe;
+      transition: background 0.2s, color 0.2s;
+    }
+    .topbar-link:hover { background: #667eea; color: #fff; border-color: #667eea; }
+
+    /* ── Layout ── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── Page title ── */
+    .page-title { font-size: 1.4rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    .page-sub { font-size: 0.85rem; color: #94a3b8; margin-bottom: 28px; }
+
+    /* ── Stat cards ── */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 22px 24px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: box-shadow 0.2s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-icon.purple { background: #f0e6ff; color: #7c3aed; }
+    .stat-icon.blue   { background: #dbeafe; color: #2563eb; }
+    .stat-icon.teal   { background: #ccfbf1; color: #0d9488; }
+
+    .stat-info .val { font-size: 1.9rem; font-weight: 700; color: #0f172a; line-height: 1; }
+    .stat-info .lbl { font-size: 0.78rem; font-weight: 500; color: #94a3b8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── Panel ── */
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .panel-header h2 { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    .search-wrap {
+      position: relative;
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      pointer-events: none;
+    }
+    .search-input {
+      padding: 8px 14px 8px 36px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: #0f172a;
+      background: #f8fafc;
+      outline: none;
+      width: 240px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .search-input:focus { border-color: #667eea; background: #fff; }
+    .search-input::placeholder { color: #cbd5e1; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-indigo { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; box-shadow: 0 2px 8px rgba(102,126,234,0.35); }
+    .btn-indigo:hover { opacity: 0.88; }
+    .btn-green  { background: #ecfdf5; color: #059669; border: 1.5px solid #a7f3d0; }
+    .btn-green:hover  { background: #d1fae5; }
+    .btn-red    { background: #fff1f2; color: #e11d48; border: 1.5px solid #fecdd3; padding: 5px 12px; font-size: 0.78rem; }
+    .btn-red:hover    { background: #ffe4e6; }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #f8fafc; }
+    thead th {
+      padding: 11px 20px;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid #f1f5f9;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #f8fafc; transition: background 0.12s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafbff; }
+    tbody td { padding: 14px 20px; font-size: 0.875rem; color: #334155; vertical-align: middle; }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .name-cell { display: flex; align-items: center; }
+    .name-text { font-weight: 600; color: #0f172a; }
+
+    .email-link { color: #667eea; text-decoration: none; font-size: 0.85rem; }
+    .email-link:hover { text-decoration: underline; }
+
+    .phone-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .date-text { color: #94a3b8; font-size: 0.8rem; }
+
+    .empty-cell {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+    .empty-cell svg { margin-bottom: 12px; opacity: 0.4; }
+    .empty-cell p { font-size: 0.9rem; }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-top: 1px solid #f1f5f9;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pg-info { font-size: 0.8rem; color: #94a3b8; }
+    .pg-btns { display: flex; gap: 4px; }
+    .pg-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      cursor: pointer;
+      color: #475569;
+      transition: all 0.15s;
+    }
+    .pg-btn:hover:not(:disabled) { border-color: #667eea; color: #667eea; }
+    .pg-btn.active { background: #667eea; color: #fff; border-color: #667eea; font-weight: 700; }
+    .pg-btn:disabled { opacity: 0.35; cursor: default; }
+
+    /* ── Modal ── */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 32px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: pop .2s ease;
+    }
+    @keyframes pop { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-icon {
+      width: 56px; height: 56px;
+      background: #fff1f2;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      color: #e11d48;
+    }
+    .modal h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .modal p { color: #64748b; font-size: 0.88rem; margin-bottom: 24px; line-height: 1.5; }
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
+    .btn-ghost {
+      padding: 9px 22px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #475569;
+      transition: background 0.15s;
+    }
+    .btn-ghost:hover { background: #f8fafc; }
+    .btn-del {
+      padding: 9px 22px;
+      background: #e11d48;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #fff;
+      transition: background 0.15s;
+    }
+    .btn-del:hover { background: #be123c; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+      z-index: 300;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.green { background: #059669; }
+    .toast.red   { background: #e11d48; }
+
+    @media (max-width: 640px) {
+      thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
+      .search-input { width: 160px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <span class="topbar-title">Admin <span>Dashboard</span></span>
+  </div>
+  <a class="topbar-link" href="แบบสอบถาม.html">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    หน้าแบบสอบถาม
+  </a>
+</header>
+
+<div class="container">
+
+  <h1 class="page-title">ภาพรวมการลงทะเบียน</h1>
+  <p class="page-sub">ข้อมูลผู้ลงทะเบียนทั้งหมด</p>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="val" id="totalCount">0</div>
+        <div class="lbl">ทั้งหมด</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="val" id="todayCount">0</div>
+        <div class="lbl">วันนี้</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon teal">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="val" id="weekCount">0</div>
+        <div class="lbl">สัปดาห์นี้</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>รายชื่อผู้ลงทะเบียน</h2>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input class="search-input" id="searchInput" placeholder="ค้นหา..." oninput="onSearch()">
+        </div>
+        <button class="btn btn-green" onclick="exportCSV()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+        <button class="btn btn-indigo" onclick="render()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-8.53"/></svg>
+          รีเฟรช
+        </button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>ชื่อ-นามสกุล</th>
+          <th>อีเมล์</th>
+          <th>เบอร์โทร</th>
+          <th>วันที่ลงทะเบียน</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <div class="pagination" id="paginationBar" style="display:none">
+      <span class="pg-info" id="pageInfo"></span>
+      <div class="pg-btns" id="pageBtns"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="deleteOverlay">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </div>
+    <h3>ยืนยันการลบ</h3>
+    <p id="deleteMsg"></p>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn-del" onclick="confirmDelete()">ลบข้อมูล</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'survey_registrations';
+  const LIMIT = 10;
+  let currentPage = 1, searchQuery = '', deleteTargetId = null;
+
+  function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  function saveRecords(r)  { localStorage.setItem(STORAGE_KEY, JSON.stringify(r)); }
+
+  function getFiltered() {
+    const all = [...getAllRecords()].reverse();
+    if (!searchQuery) return all;
+    const q = searchQuery.toLowerCase();
+    return all.filter(r => r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q) || r.phone.includes(q));
+  }
+
+  function render() {
+    const all = getAllRecords();
+    const filtered = getFiltered();
+    renderStats(all);
+    renderTable(filtered);
+    renderPagination(filtered.length);
+  }
+
+  function renderStats(all) {
+    const today = new Date().toDateString();
+    const weekAgo = new Date(Date.now() - 7*864e5);
+    document.getElementById('totalCount').textContent = all.length;
+    document.getElementById('todayCount').textContent = all.filter(r => new Date(r.registeredAt).toDateString() === today).length;
+    document.getElementById('weekCount').textContent  = all.filter(r => new Date(r.registeredAt) >= weekAgo).length;
+  }
+
+  function initials(name) {
+    return name.trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
+  }
+
+  function renderTable(filtered) {
+    const tbody = document.getElementById('tableBody');
+    const page = filtered.slice((currentPage-1)*LIMIT, currentPage*LIMIT);
+
+    if (page.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-cell">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>${!searchQuery ? 'ยังไม่มีผู้ลงทะเบียน' : 'ไม่พบข้อมูลที่ค้นหา'}</p>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = page.map((r, i) => {
+      const no   = (currentPage-1)*LIMIT + i + 1;
+      const date = new Date(r.registeredAt).toLocaleString('th-TH', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      return `<tr>
+        <td style="color:#94a3b8;font-size:.8rem;font-weight:600">${no}</td>
+        <td><div class="name-cell"><span class="avatar">${esc(initials(r.name))}</span><span class="name-text">${esc(r.name)}</span></div></td>
+        <td><a class="email-link" href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
+        <td><span class="phone-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.69 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.68 4.18 2 2 0 0 1 4.67 2h3a2 2 0 0 1 2 1.72c.128.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.91 9.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          ${esc(r.phone)}
+        </span></td>
+        <td><span class="date-text">${date}</span></td>
+        <td><button class="btn btn-red" onclick="askDelete(${r.id},'${esc(r.name)}')">ลบ</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderPagination(total) {
+    const bar = document.getElementById('paginationBar');
+    const totalPages = Math.ceil(total / LIMIT);
+    if (total === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    const s = (currentPage-1)*LIMIT+1, e = Math.min(currentPage*LIMIT, total);
+    document.getElementById('pageInfo').textContent = `แสดง ${s}–${e} จาก ${total} รายการ`;
+    let b = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    for (let p=1; p<=totalPages; p++) b += `<button class="pg-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    b += `<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+    document.getElementById('pageBtns').innerHTML = b;
+  }
+
+  function goPage(p) { currentPage = p; render(); }
+
+  let st;
+  function onSearch() {
+    clearTimeout(st);
+    st = setTimeout(() => { searchQuery = document.getElementById('searchInput').value.trim(); currentPage = 1; render(); }, 250);
+  }
+
+  function askDelete(id, name) {
+    deleteTargetId = id;
+    document.getElementById('deleteMsg').textContent = `ต้องการลบข้อมูลของ "${name}" ออกจากระบบหรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`;
+    document.getElementById('deleteOverlay').classList.add('open');
+  }
+  function closeModal() { document.getElementById('deleteOverlay').classList.remove('open'); deleteTargetId = null; }
+  function confirmDelete() {
+    saveRecords(getAllRecords().filter(r => r.id !== deleteTargetId));
+    closeModal();
+    showToast('ลบข้อมูลเรียบร้อย', 'green');
+    if ((currentPage-1)*LIMIT >= getFiltered().length && currentPage > 1) currentPage--;
+    render();
+  }
+
+  function exportCSV() {
+    const records = getAllRecords();
+    if (!records.length) { showToast('ไม่มีข้อมูลให้ Export', 'red'); return; }
+    const rows = records.map((r,i) => `${i+1},"${r.name}","${r.email}","${r.phone}","${new Date(r.registeredAt).toLocaleString('th-TH')}"`);
+    const csv = '﻿ลำดับ,ชื่อ-นามสกุล,อีเมล์,เบอร์โทร,วันที่ลงทะเบียน\n' + rows.join('\n');
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'})), download: `registrations_${new Date().toISOString().slice(0,10)}.csv` });
+    a.click();
+    showToast('Export CSV สำเร็จ', 'green');
+  }
+
+  function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast show ${type}`;
+    setTimeout(() => t.className = 'toast', 2600);
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  document.getElementById('deleteOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+  render();
+</script>
+</body>
+</html>

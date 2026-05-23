@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ดูดวงจากวันเกิด</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #001d3d, #003566, #0077b6, #00b4d8 150%);
+      color: #fff;
+      padding: 20px;
+    }
+
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(2px 2px at 10% 15%, rgba(144,224,239,0.6), transparent),
+        radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(2px 2px at 55% 20%, rgba(144,224,239,0.5), transparent),
+        radial-gradient(1px 1px at 75% 60%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 90% 10%, rgba(144,224,239,0.6), transparent),
+        radial-gradient(1px 1px at 20% 80%, rgba(255,255,255,0.25), transparent),
+        radial-gradient(2px 2px at 60% 75%, rgba(144,224,239,0.4), transparent),
+        radial-gradient(1px 1px at 85% 85%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 45% 55%, rgba(255,255,255,0.2), transparent),
+        radial-gradient(3px 3px at 5% 50%, rgba(0,180,216,0.4), transparent),
+        radial-gradient(3px 3px at 95% 30%, rgba(0,180,216,0.5), transparent),
+        radial-gradient(2px 2px at 35% 5%, rgba(144,224,239,0.7), transparent),
+        radial-gradient(1px 1px at 70% 45%, rgba(255,255,255,0.3), transparent);
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      max-width: 700px; margin: 0 auto;
+    }
+
+    header {
+      text-align: center; margin-bottom: 36px;
+    }
+
+    header .moon { font-size: 60px; margin-bottom: 8px; }
+
+    header h1 {
+      font-size: 2.2rem; font-weight: 700;
+      background: linear-gradient(90deg, #90e0ef, #00b4d8, #0096c7);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p { color: #ccc; margin-top: 6px; font-size: 1rem; }
+
+    .card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 24px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block; margin-bottom: 8px;
+      font-weight: 600; color: #90e0ef; font-size: 1rem;
+    }
+
+    input[type="date"], input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      font-family: 'Sarabun', sans-serif;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    input[type="date"]:focus, input[type="text"]:focus {
+      border-color: #00b4d8;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      border: none; border-radius: 14px;
+      color: #fff; font-size: 1.1rem; font-weight: 700;
+      font-family: 'Sarabun', sans-serif;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(0,119,182,0.5);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,180,216,0.7);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    /* Result */
+    #result { display: none; }
+
+    .result-header {
+      text-align: center; margin-bottom: 24px;
+    }
+
+    .zodiac-emoji { font-size: 70px; }
+
+    .result-name {
+      font-size: 1.8rem; font-weight: 700; margin: 8px 0 4px;
+      color: #90e0ef;
+    }
+
+    .result-sub { color: #cae9ff; font-size: 0.95rem; }
+
+    .grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin-bottom: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .info-box {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 16px;
+      text-align: center;
+    }
+
+    .info-box .label {
+      font-size: 0.8rem; color: #aaa; margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .info-box .value {
+      font-size: 1.15rem; font-weight: 700; color: #90e0ef;
+    }
+
+    .info-box .icon { font-size: 1.6rem; margin-bottom: 4px; }
+
+    .section-title {
+      font-size: 1.1rem; font-weight: 700;
+      color: #90e0ef; margin-bottom: 14px;
+      border-left: 4px solid #00b4d8; padding-left: 12px;
+    }
+
+    .fortune-text {
+      line-height: 1.9; color: #e8e8e8; font-size: 0.98rem;
+    }
+
+    .lucky-row {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+    }
+
+    .lucky-chip {
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.9rem; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .bar-row { margin: 8px 0; }
+
+    .bar-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.9rem; margin-bottom: 4px; color: #ccc;
+    }
+
+    .bar-bg {
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px; height: 8px; overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, #0077b6, #00b4d8);
+      transition: width 1s ease;
+    }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .tag {
+      background: rgba(0,180,216,0.15);
+      border: 1px solid rgba(0,180,216,0.4);
+      border-radius: 999px; padding: 4px 14px;
+      font-size: 0.88rem; color: #90e0ef;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin: 20px 0;
+    }
+
+    .compatibility { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .compat-item {
+      flex: 1; min-width: 100px;
+      background: rgba(0,180,216,0.1);
+      border: 1px solid rgba(0,180,216,0.2);
+      border-radius: 12px; padding: 12px;
+      text-align: center; font-size: 0.88rem;
+    }
+
+    .compat-item .ci { font-size: 1.5rem; }
+    .compat-item .cn { color: #cae9ff; margin-top: 4px; }
+
+    .share-btn {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0,180,216,0.15);
+      border: 1px solid rgba(0,180,216,0.3);
+      border-radius: 12px;
+      color: #fff; font-size: 0.95rem; font-weight: 600;
+      font-family: 'Sarabun', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .share-btn:hover { background: rgba(0,180,216,0.28); }
+  </style>
+</head>
+<body>
+
+<div class="stars"></div>
+
+<div class="container">
+  <header>
+    <div class="moon">🌙</div>
+    <h1>ดูดวงจากวันเกิด</h1>
+    <p>กรอกวันเกิดเพื่อรับคำทำนายดวงชะตา</p>
+  </header>
+
+  <!-- Form -->
+  <div class="card" id="formCard">
+    <div class="form-group">
+      <label>📅 วันเกิดของคุณ</label>
+      <input type="date" id="birthDate" />
+    </div>
+    <div class="form-group">
+      <label>👤 ชื่อ (ไม่จำเป็น)</label>
+      <input type="text" id="nameInput" placeholder="กรอกชื่อของคุณ..." />
+    </div>
+    <button class="btn" onclick="calculate()">✨ เปิดดวง</button>
+  </div>
+
+  <!-- Result -->
+  <div id="result">
+    <!-- Zodiac & Chinese -->
+    <div class="card">
+      <div class="result-header">
+        <div class="zodiac-emoji" id="zodiacEmoji"></div>
+        <div class="result-name" id="zodiacName"></div>
+        <div class="result-sub" id="zodiacSub"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="info-box">
+          <div class="icon">🐉</div>
+          <div class="label">นักษัตร</div>
+          <div class="value" id="chineseZodiac"></div>
+        </div>
+        <div class="info-box">
+          <div class="icon">📅</div>
+          <div class="label">วันเกิด</div>
+          <div class="value" id="birthDayName"></div>
+        </div>
+        <div class="info-box">
+          <div class="icon">🔢</div>
+          <div class="label">เลขชีวิต</div>
+          <div class="value" id="lifeNumber"></div>
+        </div>
+        <div class="info-box">
+          <div class="icon">⚡</div>
+          <div class="label">ธาตุ</div>
+          <div class="value" id="element"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fortune -->
+    <div class="card">
+      <div class="section-title">🔮 คำทำนายดวงชะตา</div>
+      <p class="fortune-text" id="fortuneText"></p>
+
+      <hr class="divider" />
+
+      <div class="section-title">📊 พลังงานด้านต่าง ๆ</div>
+
+      <div id="energyBars"></div>
+
+      <hr class="divider" />
+
+      <div class="section-title">💼 ดวงการงาน</div>
+      <p class="fortune-text" id="careerText"></p>
+
+      <hr class="divider" />
+
+      <div class="section-title">💰 ดวงการเงิน</div>
+      <p class="fortune-text" id="moneyText"></p>
+
+      <hr class="divider" />
+
+      <div class="section-title">❤️ ดวงความรัก</div>
+      <p class="fortune-text" id="loveText"></p>
+
+      <hr class="divider" />
+
+      <div class="section-title">💪 ดวงสุขภาพ</div>
+      <p class="fortune-text" id="healthText"></p>
+    </div>
+
+    <!-- Lucky -->
+    <div class="card">
+      <div class="section-title">🍀 สิ่งมงคลประจำดวง</div>
+
+      <div class="grid-2">
+        <div>
+          <div class="label" style="color:#aaa;font-size:0.85rem;margin-bottom:6px;">เลขมงคล</div>
+          <div class="lucky-row" id="luckyNumbers"></div>
+        </div>
+        <div>
+          <div class="label" style="color:#aaa;font-size:0.85rem;margin-bottom:6px;">สีมงคล</div>
+          <div class="lucky-row" id="luckyColors"></div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="section-title">🌟 นิสัยและบุคลิก</div>
+      <div class="tag-row" id="personalityTags"></div>
+
+      <hr class="divider" />
+
+      <div class="section-title">💑 ราศีที่เข้ากันได้</div>
+      <div class="compatibility" id="compatibility"></div>
+    </div>
+
+    <button class="share-btn" onclick="resetForm()">🔄 ดูดวงใหม่</button>
+    <br /><br />
+  </div>
+</div>
+
+<script>
+const ZODIACS = [
+  {
+    name: 'มังกร', emoji: '♑', en: 'Capricorn',
+    start: [12,22], end: [1,19],
+    element: 'ดิน 🌍', traits: ['มุ่งมั่น','อดทน','รับผิดชอบ','ทะเยอทะยาน','ประหยัด'],
+    fortune: 'คุณเป็นผู้มีวิสัยทัศน์และความมุ่งมั่นสูง ดวงดาวส่งพลังงานแห่งความสำเร็จมาให้อย่างเต็มเปี่ยม ช่วงนี้เป็นจังหวะทองของการวางแผนระยะยาว สิ่งที่ลงทุนแรงกายแรงใจไปจะเริ่มเห็นผลลัพธ์ที่น่าพึงพอใจ',
+    career: 'ดวงการงานรุ่งโรจน์ โอกาสก้าวหน้าในหน้าที่การงานอยู่ใกล้แค่เอื้อม ผู้ใหญ่ให้การสนับสนุน ควรแสดงความสามารถอย่างเต็มที่',
+    money: 'การเงินมีความมั่นคง รายได้เพิ่มขึ้นจากความพยายามที่ผ่านมา ระวังการลงทุนเก็งกำไรระยะสั้น ควรออมเงินเพื่ออนาคต',
+    love: 'ความรักอบอุ่นและมั่นคง คู่รักเข้าใจกันมากขึ้น คนโสดมีโอกาสพบรักจากที่ทำงานหรือจากคนรู้จักใกล้ชิด',
+    health: 'สุขภาพโดยรวมดี แต่ควรระวังความเครียดสะสม ออกกำลังกายสม่ำเสมอและนอนหลับให้เพียงพอ',
+    lucky: { numbers: [4, 8, 13, 22], colors: ['น้ำตาล', 'เทา', 'เขียว'] },
+    energy: { work: 85, money: 70, love: 65, health: 75 },
+    compat: ['♉', '♍', '♏']
+  },
+  {
+    name: 'กุมภ์', emoji: '♒', en: 'Aquarius',
+    start: [1,20], end: [2,18],
+    element: 'ลม 💨', traits: ['ความคิดสร้างสรรค์','อิสระ','เป็นมิตร','ก้าวหน้า','ฉลาด'],
+    fortune: 'คุณเป็นผู้มีความคิดล้ำสมัยและไม่ยึดติดกับกรอบเดิม ๆ ดวงดาวส่งพลังงานแห่งนวัตกรรมและการค้นพบใหม่มาให้ ช่วงนี้เหมาะแก่การลองสิ่งใหม่และกล้าเดินออกจาก comfort zone',
+    career: 'ไอเดียสร้างสรรค์ของคุณจะสร้างความประทับใจให้ผู้คนรอบข้าง โอกาสในงานที่เกี่ยวกับเทคโนโลยีหรือสื่อมีความโดดเด่น',
+    money: 'รายได้จากแหล่งที่ไม่คาดคิดอาจเข้ามา แต่ควรใช้จ่ายอย่างมีแผน หลีกเลี่ยงการซื้อของฟุ่มเฟือยในช่วงนี้',
+    love: 'ความสัมพันธ์ที่ดีเกิดจากมิตรภาพก่อน คนโสดอาจพบรักจากกิจกรรมกลุ่มหรือโซเชียลมีเดีย',
+    health: 'ระวังระบบหายใจและข้อเท้า ควรทำจิตใจให้ผ่อนคลาย เพราะคุณมีแนวโน้มคิดมากเกินไป',
+    lucky: { numbers: [4, 7, 11, 29], colors: ['ฟ้า', 'เงิน', 'ม่วง'] },
+    energy: { work: 80, money: 65, love: 75, health: 70 },
+    compat: ['♊', '♎', '♐']
+  },
+  {
+    name: 'มีน', emoji: '♓', en: 'Pisces',
+    start: [2,19], end: [3,20],
+    element: 'น้ำ 💧', traits: ['อ่อนโยน','เห็นอกเห็นใจ','ฝันใฝ่','ศิลปะ','มีสัญชาตญาณดี'],
+    fortune: 'คุณเป็นผู้ที่มีจิตใจอ่อนโยนและเต็มไปด้วยความเมตตา ดวงดาวส่งพลังงานแห่งความสำเร็จทางจิตใจมาให้ ช่วงนี้การทำบุญและช่วยเหลือผู้อื่นจะนำโชคดีกลับมาหาคุณ',
+    career: 'งานด้านศิลปะ ดนตรี หรืองานบริการมีความโดดเด่น ความสามารถในการเข้าอกเข้าใจผู้อื่นเป็นจุดแข็ง',
+    money: 'ระมัดระวังการถูกหลอกลวงด้านการเงิน ควรปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจลงทุน รายรับพอเพียงแต่ต้องประหยัด',
+    love: 'ความรักลึกซึ้งและโรแมนติก คู่รักรู้สึกใกล้ชิดกันมากขึ้น คนโสดอาจพบรักจากงานศิลปะหรือกิจกรรมดนตรี',
+    health: 'ระวังเรื่องการนอนหลับและระบบภูมิคุ้มกัน ควรออกกำลังกายในน้ำหรือโยคะ',
+    lucky: { numbers: [3, 7, 12, 21], colors: ['เขียวทะเล', 'ม่วงอ่อน', 'ขาว'] },
+    energy: { work: 70, money: 60, love: 90, health: 65 },
+    compat: ['♋', '♏', '♑']
+  },
+  {
+    name: 'เมษ', emoji: '♈', en: 'Aries',
+    start: [3,21], end: [4,19],
+    element: 'ไฟ 🔥', traits: ['กล้าหาญ','ผู้นำ','กระตือรือร้น','มีพลัง','ตรงไปตรงมา'],
+    fortune: 'คุณเป็นผู้นำโดยธรรมชาติ มีพลังงานและไฟในการดำเนินชีวิตสูง ดวงดาวส่งพลังงานแห่งความกล้าและความริเริ่มมาให้ ช่วงนี้เป็นเวลาที่ดีในการเริ่มโปรเจกต์ใหม่',
+    career: 'ความกล้าตัดสินใจของคุณจะนำพาความสำเร็จมาให้ โอกาสในการเป็นผู้นำหรือเริ่มธุรกิจใหม่มีสูง',
+    money: 'รายได้ดีแต่รายจ่ายก็มาก ระวังการใช้จ่ายตามอารมณ์ โอกาสการลงทุนด้านธุรกิจมีผลดี',
+    love: 'ความรักเร้าใจและเต็มไปด้วยพลัง คู่รักต้องการความตื่นเต้นในความสัมพันธ์ คนโสดอาจพบรักจากกิจกรรมกีฬา',
+    health: 'สุขภาพแข็งแรง แต่ระวังอุบัติเหตุจากความรีบเร่ง ควรพักผ่อนให้เพียงพอ',
+    lucky: { numbers: [1, 9, 17, 28], colors: ['แดง', 'ส้ม', 'ทอง'] },
+    energy: { work: 90, money: 75, love: 80, health: 85 },
+    compat: ['♌', '♐', '♊']
+  },
+  {
+    name: 'พฤษภ', emoji: '♉', en: 'Taurus',
+    start: [4,20], end: [5,20],
+    element: 'ดิน 🌍', traits: ['อดทน','น่าเชื่อถือ','รักสวยรักงาม','มั่นคง','ภักดี'],
+    fortune: 'คุณเป็นผู้ที่มีความมั่นคงและน่าเชื่อถือสูง ดวงดาวส่งพลังงานแห่งความสุขสงบและความมั่งคั่งมาให้ ช่วงนี้เป็นจังหวะทองของการสร้างรากฐานชีวิตที่มั่นคง',
+    career: 'ความอดทนและความมีระเบียบของคุณเป็นที่ยอมรับ งานที่ต้องการความละเอียดรอบคอบมีผลดีเป็นพิเศษ',
+    money: 'การเงินมั่นคงและมีแนวโน้มดีขึ้น การลงทุนในอสังหาริมทรัพย์หรือทองคำมีโอกาสดี',
+    love: 'ความรักมั่นคงและยาวนาน คู่รักไว้ใจกันและกัน คนโสดอาจพบรักจากที่ทำงานหรือสังคมใกล้ชิด',
+    health: 'ระวังโรคที่เกี่ยวกับคอและต่อมไทรอยด์ ควรดูแลอาหารการกินและออกกำลังกายอย่างสม่ำเสมอ',
+    lucky: { numbers: [2, 6, 15, 24], colors: ['เขียว', 'ชมพู', 'ขาว'] },
+    energy: { work: 75, money: 85, love: 80, health: 70 },
+    compat: ['♑', '♍', '♋']
+  },
+  {
+    name: 'เมถุน', emoji: '♊', en: 'Gemini',
+    start: [5,21], end: [6,20],
+    element: 'ลม 💨', traits: ['ฉลาด','สื่อสารเก่ง','อยากรู้อยากเห็น','ปรับตัวง่าย','สนุกสนาน'],
+    fortune: 'คุณเป็นผู้มีความสามารถหลากหลายและปรับตัวได้ดีกับทุกสถานการณ์ ดวงดาวส่งพลังงานแห่งการสื่อสารและการเรียนรู้มาให้ ช่วงนี้เหมาะแก่การพัฒนาทักษะใหม่ ๆ',
+    career: 'ทักษะการสื่อสารและการเจรจาของคุณโดดเด่นมาก งานด้านการตลาด สื่อ หรือการสอนมีโอกาสดี',
+    money: 'รายได้ดีจากหลายแหล่ง แต่ควรจัดการการเงินอย่างมีระบบ ระวังการใช้จ่ายที่ไม่จำเป็น',
+    love: 'ความรักสนุกสนานและเต็มไปด้วยการสนทนา คู่รักต้องการความหลากหลาย คนโสดอาจพบรักจากการพูดคุยออนไลน์',
+    health: 'ระวังระบบประสาทและการนอนหลับ ควรฝึกสมาธิเพื่อลดความวิตกกังวล',
+    lucky: { numbers: [3, 5, 14, 23], colors: ['เหลือง', 'เขียวอ่อน', 'ส้ม'] },
+    energy: { work: 85, money: 70, love: 85, health: 65 },
+    compat: ['♎', '♒', '♌']
+  },
+  {
+    name: 'กรกฎ', emoji: '♋', en: 'Cancer',
+    start: [6,21], end: [7,22],
+    element: 'น้ำ 💧', traits: ['อ่อนไหว','รักครอบครัว','เห็นอกเห็นใจ','ปกป้อง','สัญชาตญาณดี'],
+    fortune: 'คุณเป็นผู้มีหัวใจอบอุ่นและรักครอบครัวอย่างลึกซึ้ง ดวงดาวส่งพลังงานแห่งความรักและการดูแลเอาใจใส่มาให้ ช่วงนี้ความสัมพันธ์กับคนในครอบครัวจะมีความสุขเป็นพิเศษ',
+    career: 'สัญชาตญาณที่ดีของคุณจะนำทางในการทำงาน งานที่เกี่ยวกับการดูแลผู้อื่นหรือการให้บริการมีโอกาสดีเป็นพิเศษ',
+    money: 'ประหยัดและระมัดระวังด้านการเงิน การลงทุนในระยะยาวมีผลดี ควรมีเงินสำรองฉุกเฉิน',
+    love: 'ความรักอบอุ่นและเต็มไปด้วยการดูแลเอาใจใส่ คู่รักรู้สึกปลอดภัยในความสัมพันธ์ คนโสดอาจพบรักจากคนในครอบครัวแนะนำ',
+    health: 'ระวังระบบย่อยอาหารและอารมณ์ที่แปรปรวน ควรออกกำลังกายในน้ำและทำกิจกรรมผ่อนคลาย',
+    lucky: { numbers: [2, 7, 11, 16], colors: ['ขาว', 'เงิน', 'ครีม'] },
+    energy: { work: 70, money: 75, love: 90, health: 70 },
+    compat: ['♏', '♓', '♉']
+  },
+  {
+    name: 'สิงห์', emoji: '♌', en: 'Leo',
+    start: [7,23], end: [8,22],
+    element: 'ไฟ 🔥', traits: ['มีเสน่ห์','กล้าหาญ','ใจกว้าง','สร้างสรรค์','ผู้นำ'],
+    fortune: 'คุณเป็นผู้มีเสน่ห์และพลังงานสูงที่ดึงดูดผู้คนรอบข้าง ดวงดาวส่งพลังงานแห่งความยิ่งใหญ่และการได้รับการยอมรับมาให้ ช่วงนี้เป็นเวลาที่ดีในการแสดงความสามารถให้โลกได้เห็น',
+    career: 'ความเป็นผู้นำและความมีเสน่ห์ของคุณโดดเด่นมาก โอกาสในการเป็นหัวหน้าหรือตัวแทนองค์กรมีสูง',
+    money: 'รายได้ดีแต่ชอบใช้จ่ายหรูหรา ควรสร้างสมดุลระหว่างความสุขในปัจจุบันกับการเก็บออมในอนาคต',
+    love: 'ความรักหวานชื่นและโรแมนติก คู่รักชื่นชมซึ่งกันและกัน คนโสดมีเสน่ห์ดึงดูดคู่ครองได้ไม่ยาก',
+    health: 'ระวังโรคที่เกี่ยวกับหัวใจและหลัง ออกกำลังกายสม่ำเสมอและรับประทานอาหารที่มีประโยชน์',
+    lucky: { numbers: [1, 5, 19, 28], colors: ['ทอง', 'ส้ม', 'เหลือง'] },
+    energy: { work: 90, money: 80, love: 85, health: 75 },
+    compat: ['♈', '♐', '♊']
+  },
+  {
+    name: 'กันย์', emoji: '♍', en: 'Virgo',
+    start: [8,23], end: [9,22],
+    element: 'ดิน 🌍', traits: ['ละเอียดรอบคอบ','มีระเบียบ','วิเคราะห์เก่ง','ช่างสังเกต','ขยัน'],
+    fortune: 'คุณเป็นผู้ที่มีความละเอียดรอบคอบและวิเคราะห์สถานการณ์ได้ดีเยี่ยม ดวงดาวส่งพลังงานแห่งความสมบูรณ์แบบและความสำเร็จมาให้ ช่วงนี้เป็นเวลาดีในการปรับปรุงระบบการทำงาน',
+    career: 'ความละเอียดรอบคอบเป็นสิ่งที่ทำให้คุณโดดเด่นในที่ทำงาน งานด้านการวิเคราะห์ สุขภาพ หรือการศึกษามีโอกาสดี',
+    money: 'บริหารการเงินได้ดีและประหยัด มีแผนการเงินที่ชัดเจน ควรพิจารณาการลงทุนในกองทุนรวม',
+    love: 'ความรักเรียบง่ายแต่ลึกซึ้ง คู่รักชื่นชมความใส่ใจในรายละเอียด คนโสดอาจพบรักจากสภาพแวดล้อมการทำงาน',
+    health: 'ระวังระบบย่อยอาหารและความวิตกกังวล ดูแลอาหารการกินอย่างสม่ำเสมอและออกกำลังกายเบา ๆ',
+    lucky: { numbers: [5, 14, 23, 32], colors: ['เขียว', 'น้ำตาล', 'เหลือง'] },
+    energy: { work: 88, money: 82, love: 68, health: 72 },
+    compat: ['♑', '♉', '♋']
+  },
+  {
+    name: 'ตุล', emoji: '♎', en: 'Libra',
+    start: [9,23], end: [10,22],
+    element: 'ลม 💨', traits: ['ยุติธรรม','มีเสน่ห์','รักสงบ','ชอบความสวยงาม','การทูตเก่ง'],
+    fortune: 'คุณเป็นผู้ที่รักความยุติธรรมและสันติภาพ มีเสน่ห์ที่ทำให้ผู้คนรักใคร่ ดวงดาวส่งพลังงานแห่งความสมดุลและความสัมพันธ์ที่ดีมาให้ ช่วงนี้เหมาะแก่การสร้างพันธมิตรใหม่',
+    career: 'ทักษะการเจรจาและการประสานงานของคุณโดดเด่น งานด้านกฎหมาย การทูต หรือศิลปะมีโอกาสดีเป็นพิเศษ',
+    money: 'รายได้สม่ำเสมอ ชอบใช้จ่ายกับสิ่งสวยงาม ควรวางแผนการเงินและกำหนดงบประมาณให้ชัดเจน',
+    love: 'ความรักโรแมนติกและสวยงาม คู่รักมีความเข้าใจกันดี คนโสดอาจพบรักจากงานสังคมหรือกิจกรรมศิลปะ',
+    health: 'ระวังโรคที่เกี่ยวกับไตและหลัง ควรดูแลสมดุลร่างกายและจิตใจ หลีกเลี่ยงความเครียด',
+    lucky: { numbers: [6, 15, 24, 33], colors: ['ชมพู', 'ฟ้าอ่อน', 'ขาว'] },
+    energy: { work: 78, money: 73, love: 92, health: 70 },
+    compat: ['♊', '♒', '♐']
+  },
+  {
+    name: 'พิจิก', emoji: '♏', en: 'Scorpio',
+    start: [10,23], end: [11,21],
+    element: 'น้ำ 💧', traits: ['ลึกซึ้ง','มุ่งมั่น','หัวใจแกร่ง','มีเสน่ห์','ลึกลับ'],
+    fortune: 'คุณเป็นผู้ที่มีพลังงานแห่งการเปลี่ยนแปลงและการฟื้นฟู ดวงดาวส่งพลังงานแห่งความลึกซึ้งและความสำเร็จมาให้ ช่วงนี้การปล่อยวางสิ่งเก่าจะเปิดโอกาสใหม่ที่ดียิ่งกว่า',
+    career: 'ความเด็ดขาดและความสามารถในการวิเคราะห์เชิงลึกเป็นจุดแข็ง งานด้านการวิจัย จิตวิทยา หรือธุรกิจมีโอกาสดี',
+    money: 'มีความสามารถในการบริหารการเงินและการลงทุน อาจมีรายได้จากมรดกหรือความร่วมมือทางธุรกิจ',
+    love: 'ความรักลึกซึ้งและมีพลัง คู่รักรู้สึกถึงความหลงใหล คนโสดอาจพบรักที่เข้มข้นและน่าตื่นเต้น',
+    health: 'ระวังระบบสืบพันธุ์และระบบขับถ่าย ควรออกกำลังกายอย่างสม่ำเสมอและจัดการอารมณ์เชิงลบ',
+    lucky: { numbers: [8, 11, 18, 22], colors: ['แดงเข้ม', 'ดำ', 'มะรุม'] },
+    energy: { work: 82, money: 88, love: 87, health: 68 },
+    compat: ['♋', '♓', '♑']
+  },
+  {
+    name: 'ธนู', emoji: '♐', en: 'Sagittarius',
+    start: [11,22], end: [12,21],
+    element: 'ไฟ 🔥', traits: ['ร่าเริง','ผจญภัย','ซื่อสัตย์','มองโลกในแง่ดี','รักอิสระ'],
+    fortune: 'คุณเป็นผู้ที่รักการเดินทางและการผจญภัย มีวิสัยทัศน์กว้างไกลและมองโลกในแง่ดีเสมอ ดวงดาวส่งพลังงานแห่งโชคลาภและการขยายขอบเขตชีวิตมาให้',
+    career: 'ความมองโลกในแง่ดีและวิสัยทัศน์กว้างไกลของคุณเป็นที่ต้องการ งานด้านการท่องเที่ยว การศึกษา หรือสื่อมีโอกาสดี',
+    money: 'โชคลาภอาจมาจากที่ไม่คาดคิด รายได้มีขึ้นมีลง ควรมีการออมเงินเป็นนิสัย',
+    love: 'ความรักเต็มไปด้วยการผจญภัยและความสนุกสนาน คู่รักชอบเดินทางด้วยกัน คนโสดอาจพบรักจากการเดินทาง',
+    health: 'ระวังโรคที่เกี่ยวกับสะโพกและต้นขา ออกกำลังกายกลางแจ้งและกีฬาที่ต้องใช้ความอดทน',
+    lucky: { numbers: [3, 9, 21, 27], colors: ['ม่วง', 'น้ำเงิน', 'แดง'] },
+    energy: { work: 80, money: 78, love: 83, health: 80 },
+    compat: ['♈', '♌', '♒']
+  }
+];
+
+const CHINESE_ZODIAC = ['ชวด (หนู) 🐭', 'ฉลู (วัว) 🐮', 'ขาล (เสือ) 🐯', 'เถาะ (กระต่าย) 🐰', 'มะโรง (งูใหญ่) 🐲', 'มะเส็ง (งู) 🐍', 'มะเมีย (ม้า) 🐴', 'มะแม (แพะ) 🐐', 'วอก (ลิง) 🐒', 'ระกา (ไก่) 🐔', 'จอ (หมา) 🐕', 'กุน (หมู) 🐖'];
+
+const DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+const DAY_COLORS = ['แดง', 'เหลือง', 'ชมพู', 'เขียว', 'ส้ม', 'ฟ้า', 'ม่วง'];
+const DAY_EMOJI = ['☀️', '🌙', '🔴', '💚', '⚡', '💎', '🪐'];
+
+function getZodiac(month, day) {
+  const md = month * 100 + day;
+  if (md >= 1222 || md <= 119) return ZODIACS[0];  // มังกร
+  if (md <= 218) return ZODIACS[1];   // กุมภ์
+  if (md <= 320) return ZODIACS[2];   // มีน
+  if (md <= 419) return ZODIACS[3];   // เมษ
+  if (md <= 520) return ZODIACS[4];   // พฤษภ
+  if (md <= 620) return ZODIACS[5];   // เมถุน
+  if (md <= 722) return ZODIACS[6];   // กรกฎ
+  if (md <= 822) return ZODIACS[7];   // สิงห์
+  if (md <= 922) return ZODIACS[8];   // กันย์
+  if (md <= 1022) return ZODIACS[9];  // ตุล
+  if (md <= 1121) return ZODIACS[10]; // พิจิก
+  return ZODIACS[11]; // ธนู
+}
+
+function getChineseZodiac(year) {
+  return CHINESE_ZODIAC[(year - 4) % 12];
+}
+
+function getLifeNumber(dateStr) {
+  const digits = dateStr.replace(/-/g, '');
+  let sum = digits.split('').reduce((a, b) => a + parseInt(b), 0);
+  while (sum > 9) {
+    sum = sum.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+  }
+  return sum;
+}
+
+function formatThaiDate(date) {
+  const d = date.getDate();
+  const m = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+             'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][date.getMonth()];
+  const y = date.getFullYear() + 543;
+  return `${d} ${m} พ.ศ. ${y}`;
+}
+
+function getCompatEmoji(sym) {
+  const z = ZODIACS.find(z => z.emoji === sym);
+  return z ? `${z.emoji} ${z.name}` : sym;
+}
+
+function colorStyle(colorName) {
+  const map = {
+    'แดง': '#ef4444', 'แดงเข้ม': '#991b1b', 'ส้ม': '#f97316',
+    'เหลือง': '#eab308', 'เขียว': '#22c55e', 'เขียวทะเล': '#0d9488',
+    'เขียวอ่อน': '#86efac', 'ฟ้า': '#3b82f6', 'ฟ้าอ่อน': '#bfdbfe',
+    'น้ำเงิน': '#1d4ed8', 'ม่วง': '#a855f7', 'ม่วงอ่อน': '#e9d5ff',
+    'ชมพู': '#ec4899', 'ขาว': '#f3f4f6', 'ดำ': '#374151',
+    'เทา': '#9ca3af', 'น้ำตาล': '#78350f', 'ทอง': '#f59e0b',
+    'เงิน': '#d1d5db', 'ครีม': '#fef3c7', 'มะรุม': '#4d7c0f',
+  };
+  return map[colorName] || '#888';
+}
+
+function calculate() {
+  const dateVal = document.getElementById('birthDate').value;
+  if (!dateVal) { alert('กรุณากรอกวันเกิด'); return; }
+
+  const date = new Date(dateVal);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const dow = date.getDay();
+  const name = document.getElementById('nameInput').value.trim();
+
+  const zodiac = getZodiac(month, day);
+  const chineseZ = getChineseZodiac(year);
+  const lifeNum = getLifeNumber(dateVal);
+  const dayName = DAYS[dow];
+  const dayColor = DAY_COLORS[dow];
+  const dayEmoji = DAY_EMOJI[dow];
+
+  // Fill zodiac header
+  document.getElementById('zodiacEmoji').textContent = zodiac.emoji;
+  document.getElementById('zodiacName').textContent =
+    (name ? `${name} — ` : '') + `ราศี${zodiac.name}`;
+  document.getElementById('zodiacSub').textContent =
+    `${zodiac.en} | ${formatThaiDate(date)} | วัน${dayName}`;
+
+  document.getElementById('chineseZodiac').textContent = chineseZ;
+  document.getElementById('birthDayName').textContent = `วัน${dayName} ${dayEmoji}`;
+  document.getElementById('lifeNumber').textContent = lifeNum;
+  document.getElementById('element').textContent = zodiac.element;
+
+  // Fortune texts
+  document.getElementById('fortuneText').textContent = zodiac.fortune;
+  document.getElementById('careerText').textContent = zodiac.career;
+  document.getElementById('moneyText').textContent = zodiac.money;
+  document.getElementById('loveText').textContent = zodiac.love;
+  document.getElementById('healthText').textContent = zodiac.health;
+
+  // Energy bars
+  const eb = document.getElementById('energyBars');
+  eb.innerHTML = '';
+  const bars = [
+    { label: '💼 การงาน', val: zodiac.energy.work },
+    { label: '💰 การเงิน', val: zodiac.energy.money },
+    { label: '❤️ ความรัก', val: zodiac.energy.love },
+    { label: '💪 สุขภาพ', val: zodiac.energy.health },
+  ];
+  bars.forEach(b => {
+    eb.innerHTML += `
+      <div class="bar-row">
+        <div class="bar-label"><span>${b.label}</span><span>${b.val}%</span></div>
+        <div class="bar-bg"><div class="bar-fill" style="width:0%" data-val="${b.val}"></div></div>
+      </div>`;
+  });
+
+  // Lucky numbers
+  const allNums = [...zodiac.lucky.numbers];
+  if (!allNums.includes(lifeNum)) allNums.push(lifeNum);
+  document.getElementById('luckyNumbers').innerHTML = allNums.map(n =>
+    `<span class="lucky-chip" style="background:rgba(0,180,216,0.2);border-color:rgba(0,180,216,0.5)">${n}</span>`
+  ).join('');
+
+  // Lucky colors (include day color)
+  const colors = [...zodiac.lucky.colors];
+  if (!colors.includes(dayColor)) colors.unshift(dayColor);
+  document.getElementById('luckyColors').innerHTML = colors.map(c =>
+    `<span class="lucky-chip" style="background:${colorStyle(c)}22;border-color:${colorStyle(c)};color:#fff">${c}</span>`
+  ).join('');
+
+  // Personality tags
+  const allTraits = [...zodiac.traits, `วัน${dayName}`];
+  document.getElementById('personalityTags').innerHTML = allTraits.map(t =>
+    `<span class="tag">${t}</span>`
+  ).join('');
+
+  // Compatibility
+  document.getElementById('compatibility').innerHTML = zodiac.compat.map(sym => {
+    const z2 = ZODIACS.find(z => z.emoji === sym);
+    return z2 ? `<div class="compat-item"><div class="ci">${z2.emoji}</div><div class="cn">ราศี${z2.name}</div></div>` : '';
+  }).join('');
+
+  // Show result
+  document.getElementById('formCard').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+
+  // Animate bars after render
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.val + '%';
+    });
+  }, 100);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+  document.getElementById('formCard').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
