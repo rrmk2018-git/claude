@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Map – ระบบจองรถบริษัท</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f2f5;color:#333;min-height:100vh}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1e3a5f,#2980b9);color:#fff;padding:28px 40px;text-align:center}
+.hdr h1{font-size:26px;font-weight:800;margin-bottom:6px}
+.hdr p{font-size:13px;opacity:.8}
+.url-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 20px;font-size:13px;margin-top:12px;font-family:monospace}
+.url-badge a{color:#fff;text-decoration:none}
+.url-badge a:hover{text-decoration:underline}
+
+/* MAIN LAYOUT */
+.wrap{max-width:1300px;margin:0 auto;padding:36px 24px}
+
+/* ROOT NODE */
+.root-box{background:linear-gradient(135deg,#1e3a5f,#2980b9);color:#fff;border-radius:16px;padding:24px 36px;text-align:center;margin-bottom:0;box-shadow:0 8px 30px rgba(30,58,95,.35);position:relative}
+.root-box .icon{font-size:42px;margin-bottom:8px}
+.root-box h2{font-size:22px;font-weight:800}
+.root-box p{font-size:12px;opacity:.8;margin-top:4px}
+
+/* CONNECTOR */
+.connector-down{display:flex;justify-content:center;height:40px;position:relative}
+.connector-down::before{content:'';position:absolute;left:50%;top:0;width:2px;height:100%;background:#94a3b8}
+
+.connector-h{display:flex;justify-content:center;align-items:flex-start;position:relative;margin-bottom:0}
+.connector-h::before{content:'';position:absolute;left:calc(16.66%);right:calc(16.66%);top:0;height:2px;background:#94a3b8}
+.h-down{flex:1;display:flex;justify-content:center}
+.h-down::before{content:'';display:block;width:2px;height:32px;background:#94a3b8}
+
+/* PAGE COLUMNS */
+.pages{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:0}
+
+/* PAGE CARD */
+.page-card{border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.page-head{padding:18px 20px;display:flex;align-items:center;gap:12px}
+.page-head .icon{font-size:28px}
+.page-head h3{font-size:16px;font-weight:800;color:#fff}
+.page-head p{font-size:11px;color:rgba(255,255,255,.8);margin-top:2px}
+
+.pg-book .page-head{background:linear-gradient(135deg,#1e3a5f,#2c6fad)}
+.pg-dash .page-head{background:linear-gradient(135deg,#065f46,#059669)}
+.pg-admin .page-head{background:linear-gradient(135deg,#7c2d12,#c2410c)}
+
+.page-body{background:#fff;padding:16px}
+
+/* SECTION inside page */
+.sec{margin-bottom:14px}
+.sec-title{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed #e2e8f0;display:flex;align-items:center;gap:6px}
+.items{display:flex;flex-direction:column;gap:5px}
+.item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:8px;font-size:13px;color:#334155;transition:.15s}
+.item:hover{background:#f8fafc}
+.item .dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.pg-book .item .dot{background:#2980b9}
+.pg-dash .item .dot{background:#059669}
+.pg-admin .item .dot{background:#c2410c}
+.item-label{line-height:1.4}
+.item-sub{font-size:11px;color:#94a3b8;margin-top:1px}
+
+/* CAR LIST */
+.car-list{display:flex;flex-direction:column;gap:5px}
+.car-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;border:1px solid #e2e8f0;font-size:12px}
+.car-item .car-icon{font-size:18px}
+.car-info strong{display:block;font-size:12px;color:#1e3a5f}
+.car-info span{font-size:11px;color:#94a3b8}
+
+/* STATUS BADGES */
+.badge-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.approved{background:#d1fae5;color:#065f46}
+.badge.completed{background:#dbeafe;color:#1e40af}
+.badge.rejected{background:#fee2e2;color:#991b1b}
+.badge.cancelled{background:#f3f4f6;color:#6b7280}
+
+/* CHART LIST */
+.chart-item{display:flex;align-items:center;gap:8px;padding:5px 8px;font-size:12px;border-radius:6px}
+.chart-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+/* MODAL NODE */
+.modal-section{background:#fef9c3;border:1px dashed #f59e0b;border-radius:10px;padding:12px;margin-top:8px}
+.modal-section .modal-title{font-size:11px;font-weight:700;color:#92400e;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+
+/* LEGEND */
+.legend{display:flex;justify-content:center;gap:28px;margin:30px 0 10px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#64748b}
+.legend-dot{width:14px;height:14px;border-radius:4px}
+
+/* FOOTER */
+.footer{text-align:center;margin-top:36px;color:#94a3b8;font-size:12px;padding-bottom:32px}
+.footer a{color:#2980b9;text-decoration:none}
+
+/* STORAGE NOTE */
+.storage-note{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;margin-top:24px;display:flex;align-items:flex-start;gap:12px}
+.storage-note .note-icon{font-size:24px;flex-shrink:0}
+.storage-note h4{font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:4px}
+.storage-note p{font-size:12px;color:#64748b;line-height:1.6}
+
+@media(max-width:900px){
+  .pages{grid-template-columns:1fr}
+  .connector-h::before{display:none}
+  .h-down::before{height:16px}
+  .wrap{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div style="font-size:44px;margin-bottom:10px">🗺️</div>
+  <h1>Site Map – ระบบจองรถบริษัท</h1>
+  <p>แผนผังโครงสร้างเว็บไซต์และฟีเจอร์ทั้งหมด</p>
+  <div class="url-badge">🌐 <a href="https://claude-production-565c.up.railway.app" target="_blank">claude-production-565c.up.railway.app</a></div>
+</div>
+
+<div class="wrap">
+
+  <!-- ROOT -->
+  <div class="root-box">
+    <div class="icon">🚗</div>
+    <h2>ระบบจองรถบริษัท</h2>
+    <p>Company Vehicle Booking System &nbsp;|&nbsp; Single Page Application (SPA)</p>
+  </div>
+
+  <!-- VERTICAL CONNECTOR -->
+  <div class="connector-down"></div>
+
+  <!-- HORIZONTAL BAR + 3 DROPS -->
+  <div class="connector-h">
+    <div class="h-down"></div>
+    <div class="h-down"></div>
+    <div class="h-down"></div>
+  </div>
+
+  <!-- 3 PAGE COLUMNS -->
+  <div class="pages">
+
+    <!-- ===== PAGE 1: จองรถ ===== -->
+    <div class="page-card pg-book">
+      <div class="page-head">
+        <div class="icon">📋</div>
+        <div>
+          <h3>จองรถ</h3>
+          <p>แบบฟอร์มยื่นคำขอจองรถ</p>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <div class="sec">
+          <div class="sec-title">👤 ข้อมูลผู้จอง</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">ชื่อ-นามสกุล</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">แผนก / ฝ่าย<div class="item-sub">9 แผนก (บริหาร, ขาย, IT ฯลฯ)</div></div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">เบอร์โทรศัพท์</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">จำนวนผู้โดยสาร<div class="item-sub">1–7 คน</div></div></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">📅 รายละเอียดการเดินทาง</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">วันที่ + เวลาเริ่มใช้รถ</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">วันที่ + เวลาคืนรถ</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">ปลายทาง / สถานที่</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">วัตถุประสงค์<div class="item-sub">8 ประเภท (ลูกค้า, ประชุม, ราชการ ฯลฯ)</div></div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">หมายเหตุเพิ่มเติม</div></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">🚗 เลือกยานพาหนะ</div>
+          <div class="car-list">
+            <div class="car-item">
+              <div class="car-icon">🚗</div>
+              <div class="car-info"><strong>Toyota Camry 2.5G</strong><span>2024 · ขาวมุก · 5 ที่นั่ง</span></div>
+            </div>
+            <div class="car-item">
+              <div class="car-icon">🚙</div>
+              <div class="car-info"><strong>Honda CR-V EL 4WD</strong><span>2023 · ดำ · 5 ที่นั่ง</span></div>
+            </div>
+            <div class="car-item">
+              <div class="car-icon">🚐</div>
+              <div class="car-info"><strong>Toyota Fortuner Legender</strong><span>2024 · เงิน · 7 ที่นั่ง</span></div>
+            </div>
+            <div class="car-item">
+              <div class="car-icon">🛻</div>
+              <div class="car-info"><strong>Isuzu D-Max Hi-Lander</strong><span>2023 · น้ำเงิน · 5 ที่นั่ง</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">⚙️ การทำงาน</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">ตรวจสอบการชนกันของเวลา<div class="item-sub">Conflict detection อัตโนมัติ</div></div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">Validate ข้อมูลครบถ้วน</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">แจ้งเตือน Toast notification</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">หน้ายืนยัน + รหัสการจอง</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">บันทึก localStorage</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== PAGE 2: Dashboard ===== -->
+    <div class="page-card pg-dash">
+      <div class="page-head">
+        <div class="icon">📊</div>
+        <div>
+          <h3>Dashboard</h3>
+          <p>ภาพรวมสถิติการใช้งาน</p>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <div class="sec">
+          <div class="sec-title">🔢 Stat Cards (4 ใบ)</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">การจองทั้งหมด</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">รอการอนุมัติ</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">อนุมัติแล้ว / กำลังใช้งาน</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">เสร็จสิ้น</div></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">📈 กราฟ Chart.js (4 กราฟ)</div>
+          <div class="items">
+            <div class="chart-item">
+              <div class="chart-dot" style="background:#3b82f6"></div>
+              <div>การจองรายเดือน<span style="color:#94a3b8;font-size:11px"> – Bar Chart (6 เดือน)</span></div>
+            </div>
+            <div class="chart-item">
+              <div class="chart-dot" style="background:#8b5cf6"></div>
+              <div>การใช้งานแยกตามรถ<span style="color:#94a3b8;font-size:11px"> – Donut Chart</span></div>
+            </div>
+            <div class="chart-item">
+              <div class="chart-dot" style="background:#f59e0b"></div>
+              <div>สถานะการจองทั้งหมด<span style="color:#94a3b8;font-size:11px"> – Pie Chart</span></div>
+            </div>
+            <div class="chart-item">
+              <div class="chart-dot" style="background:#10b981"></div>
+              <div>การใช้งานแยกตามแผนก<span style="color:#94a3b8;font-size:11px"> – Horizontal Bar</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">🚘 สถานะรถปัจจุบัน</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">Card สถานะรถ 4 คัน<div class="item-sub">แสดง: ว่าง / กำลังใช้งาน / รอนุมัติ</div></div></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">🕐 การจองล่าสุด</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">ตาราง 5 รายการล่าสุด<div class="item-sub">รหัส · ผู้จอง · รถ · วันที่ · สถานะ</div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== PAGE 3: ประวัติการจอง ===== -->
+    <div class="page-card pg-admin">
+      <div class="page-head">
+        <div class="icon">🗂️</div>
+        <div>
+          <h3>ประวัติการจอง</h3>
+          <p>จัดการและอนุมัติคำขอทั้งหมด</p>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <div class="sec">
+          <div class="sec-title">🔍 ค้นหา &amp; กรอง</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">Search<div class="item-sub">ชื่อ, แผนก, ปลายทาง, รหัส</div></div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">กรองตามสถานะ</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">กรองตามรถ</div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">กรองตามเดือน</div></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">📋 ตารางการจอง</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">แสดงรายการทั้งหมด<div class="item-sub">รหัส · ผู้จอง · แผนก · รถ · วัน · ปลายทาง · สถานะ</div></div></div>
+            <div class="item"><div class="dot"></div><div class="item-label">นับจำนวนผลลัพธ์</div></div>
+          </div>
+          <div class="badge-row" style="margin-top:8px">
+            <span class="badge pending">⏳ รอนุมัติ</span>
+            <span class="badge approved">✅ อนุมัติ</span>
+            <span class="badge completed">🏁 เสร็จสิ้น</span>
+            <span class="badge rejected">❌ ไม่อนุมัติ</span>
+            <span class="badge cancelled">🚫 ยกเลิก</span>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">📄 รายละเอียด (Modal)</div>
+          <div class="modal-section">
+            <div class="modal-title">💬 Popup รายละเอียดการจอง</div>
+            <div class="items">
+              <div class="item"><div class="dot" style="background:#c2410c"></div><div class="item-label">ดูข้อมูลครบถ้วน</div></div>
+              <div class="item"><div class="dot" style="background:#059669"></div><div class="item-label">✅ อนุมัติ</div></div>
+              <div class="item"><div class="dot" style="background:#dc2626"></div><div class="item-label">❌ ไม่อนุมัติ</div></div>
+              <div class="item"><div class="dot" style="background:#2980b9"></div><div class="item-label">🏁 เสร็จสิ้น</div></div>
+              <div class="item"><div class="dot" style="background:#6b7280"></div><div class="item-label">🚫 ยกเลิก</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">📥 ส่งออกข้อมูล</div>
+          <div class="items">
+            <div class="item"><div class="dot"></div><div class="item-label">Export CSV<div class="item-sub">ดาวน์โหลดรายงานการจองทั้งหมด</div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+
+  <!-- STORAGE / TECH NOTE -->
+  <div class="storage-note">
+    <div class="note-icon">💾</div>
+    <div>
+      <h4>การจัดเก็บข้อมูล &amp; เทคโนโลยี</h4>
+      <p>
+        <strong>Frontend:</strong> HTML5 · CSS3 · Vanilla JavaScript (ES6+) &nbsp;|&nbsp;
+        <strong>กราฟ:</strong> Chart.js CDN &nbsp;|&nbsp;
+        <strong>Storage:</strong> Browser localStorage (ไม่ต้องใช้ฐานข้อมูล) &nbsp;|&nbsp;
+        <strong>Server:</strong> Node.js + Express (static file server) &nbsp;|&nbsp;
+        <strong>Hosting:</strong> Railway.app &nbsp;|&nbsp;
+        <strong>Source:</strong> GitHub (rrmk2018-git/claude)
+      </p>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#1e3a5f,#2c6fad)"></div> หน้าจองรถ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#065f46,#059669)"></div> Dashboard</div>
+    <div class="legend-item"><div class="legend-dot" style="background:linear-gradient(135deg,#7c2d12,#c2410c)"></div> ประวัติการจอง</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:1px dashed #f59e0b"></div> Modal Popup</div>
+  </div>
+
+  <div class="footer">
+    <p>ระบบจองรถบริษัท &nbsp;·&nbsp; <a href="https://claude-production-565c.up.railway.app" target="_blank">claude-production-565c.up.railway.app</a> &nbsp;·&nbsp; <a href="/sitemap.html">sitemap.html</a></p>
+  </div>
+
+</div><!-- /wrap -->
+</body>
+</html>
