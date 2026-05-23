@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจองรถบริษัท</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f0f2f5;color:#333;font-size:14px}
+:root{--primary:#1e3a5f;--accent:#2980b9;--success:#27ae60;--warn:#f39c12;--danger:#e74c3c;--gray:#6b7280}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#1e3a5f,#2980b9);color:#fff;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.hdr-top{display:flex;align-items:center;gap:12px;padding:14px 0 6px}
+.hdr-top h1{font-size:20px;font-weight:700}
+.hdr-top p{font-size:11px;opacity:.75}
+.nav{display:flex;gap:4px;padding:8px 0 0}
+.nb{background:transparent;border:none;color:rgba(255,255,255,.7);padding:10px 22px;cursor:pointer;font-size:14px;border-radius:8px 8px 0 0;transition:.2s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.nb:hover{background:rgba(255,255,255,.1);color:#fff}
+.nb.active{background:#f0f2f5;color:#1e3a5f;font-weight:700}
+
+/* LAYOUT */
+.main{max-width:1400px;margin:0 auto;padding:24px}
+.page{display:none}.page.active{display:block}
+.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:24px}
+.ct{font-size:17px;font-weight:700;color:#1e3a5f;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.ph{margin-bottom:22px}.ph h2{font-size:23px;font-weight:700;color:#1e3a5f}.ph p{font-size:13px;color:#6b7280;margin-top:3px}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* STAT CARDS */
+.sc{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.07);display:flex;align-items:center;gap:16px}
+.si{width:54px;height:54px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.si.blue{background:#dbeafe}.si.yellow{background:#fef3c7}.si.green{background:#d1fae5}.si.red{background:#fee2e2}.si.purple{background:#ede9fe}
+.sv{font-size:30px;font-weight:700;color:#1e3a5f;line-height:1}.sl{font-size:12px;color:#6b7280;margin-top:3px}
+
+/* FORM */
+.fg .full{grid-column:1/-1}
+.fl{display:flex;flex-direction:column;gap:6px}
+.fl label{font-weight:600;font-size:13px;color:#374151}
+.fl label span{color:#e74c3c}
+.fc{padding:10px 14px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;transition:.2s;background:#fff;color:#333;width:100%}
+.fc:focus{outline:none;border-color:#2980b9}
+textarea.fc{resize:vertical;min-height:80px}
+
+/* CAR CARDS */
+.cg{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.cc{border:2px solid #e5e7eb;border-radius:10px;padding:14px;cursor:pointer;transition:.2s;position:relative}
+.cc:hover{border-color:#2980b9;background:#f0f7ff}
+.cc.sel{border-color:#2980b9;background:#dbeafe}
+.cc.busy{opacity:.55;cursor:not-allowed;background:#f9fafb}
+.cn{font-weight:700;font-size:14px;color:#1e3a5f;margin:6px 0 2px}
+.cp{font-size:12px;color:#666;margin:2px 0}
+.cbadge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;margin-top:6px}
+.avail{background:#d1fae5;color:#065f46}.busy-b{background:#fee2e2;color:#991b1b}
+.car-img{width:100%;height:150px;border-radius:8px;margin-bottom:10px;overflow:hidden;background:#f0f2f5;position:relative}
+.car-img img{width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .35s ease;display:block}
+.cc:hover .car-img img{transform:scale(1.06)}
+.cc.busy .car-img{filter:grayscale(.6) brightness(.9)}
+.cc.busy .car-img img{transform:none}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-family:inherit;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.bp{background:#1e3a5f;color:#fff}.bp:hover{background:#2980b9}
+.bs{background:#27ae60;color:#fff}.bs:hover{background:#1e8449}
+.bw{background:#f39c12;color:#fff}.bw:hover{background:#d68910}
+.bd{background:#e74c3c;color:#fff}.bd:hover{background:#c0392b}
+.bg{background:#95a5a6;color:#fff}.bg:hover{background:#7f8c8d}
+.bo{background:transparent;border:2px solid #1e3a5f;color:#1e3a5f}.bo:hover{background:#1e3a5f;color:#fff}
+.sm{padding:6px 12px;font-size:12px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f8fafc;padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+td{padding:13px 14px;border-bottom:1px solid #f3f4f6;font-size:13px;vertical-align:middle}
+tr:hover td{background:#f9fafb}
+
+/* STATUS BADGES */
+.sb{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.sp{background:#fef3c7;color:#92400e}.sa{background:#d1fae5;color:#065f46}
+.sr{background:#fee2e2;color:#991b1b}.sc2{background:#dbeafe;color:#1e40af}
+.sca{background:#f3f4f6;color:#6b7280}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.mo.show{display:flex}
+.md{background:#fff;border-radius:16px;padding:28px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mt{font-size:17px;font-weight:700;color:#1e3a5f}
+.mc{background:none;border:none;font-size:20px;cursor:pointer;color:#666;padding:4px}.mc:hover{color:#333}
+.dr{display:flex;padding:9px 0;border-bottom:1px solid #f3f4f6}
+.dl{min-width:150px;font-weight:600;color:#6b7280;font-size:13px}
+.dv{color:#333;font-size:13px}
+
+/* TOAST */
+.tc{position:fixed;top:78px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;padding:13px 18px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:9px;min-width:270px;animation:si .3s ease;border-left:4px solid}
+.toast.success{border-color:#27ae60}.toast.error{border-color:#e74c3c}
+.toast.warning{border-color:#f39c12}.toast.info{border-color:#2980b9}
+@keyframes si{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* FILTER BAR */
+.fb{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.sw{position:relative;flex:1;min-width:200px}
+.si2{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:15px}
+.si-input{padding:8px 14px 8px 34px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;font-family:inherit;width:100%}
+.si-input:focus{outline:none;border-color:#2980b9}
+.fs{padding:8px 12px;border:2px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:inherit;background:#fff}
+.fs:focus{outline:none;border-color:#2980b9}
+
+/* CAR STATUS CARD */
+.csc{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+
+/* EMPTY STATE */
+.es{text-align:center;padding:48px 24px;color:#9ca3af}
+.es div{font-size:44px;margin-bottom:10px}.es p{font-size:15px}
+
+/* CONFIRM CARD */
+.conf{background:linear-gradient(135deg,#1e3a5f,#2980b9);color:#fff;border-radius:12px;padding:28px;text-align:center}
+.conf .ci{font-size:48px;margin-bottom:10px}
+.conf .ctt{font-size:20px;font-weight:700;margin-bottom:6px}
+.conf .cr{font-size:26px;font-weight:800;font-family:monospace;margin:8px 0}
+
+/* BOOKING ID */
+.bid{font-family:monospace;font-size:12px;background:#f3f4f6;padding:2px 6px;border-radius:4px}
+
+@media(max-width:900px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.fg{grid-template-columns:1fr}.cg{grid-template-columns:1fr}.main{padding:14px}}
+@media(max-width:500px){.g4{grid-template-columns:1fr}.nb{padding:8px 12px;font-size:13px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div style="font-size:30px">🚗</div>
+    <div><h1>ระบบจองรถบริษัท</h1><p>Company Vehicle Booking System</p></div>
+    <div style="margin-left:auto;font-size:12px;opacity:.7" id="currentDate"></div>
+  </div>
+  <div class="nav">
+    <button class="nb active" onclick="showPage('booking')">📋 จองรถ</button>
+    <button class="nb" onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button class="nb" onclick="showPage('admin')">🗂️ ประวัติการจอง</button>
+  </div>
+</div>
+
+<div class="tc" id="TC"></div>
+
+<div class="main">
+
+<!-- ===== BOOKING PAGE ===== -->
+<div class="page active" id="page-booking">
+  <div class="ph"><h2>📋 แบบฟอร์มจองรถ</h2><p>กรอกข้อมูลเพื่อยื่นคำขอจองรถสำหรับการเดินทางของท่าน</p></div>
+
+  <div id="booking-success" style="display:none">
+    <div class="card">
+      <div class="conf">
+        <div class="ci">🎉</div>
+        <div class="ctt">ยื่นคำขอจองสำเร็จ!</div>
+        <p style="opacity:.85;margin-bottom:8px">รหัสการจองของท่าน</p>
+        <div class="cr" id="success-id"></div>
+        <p style="opacity:.75;font-size:12px;margin-top:6px">กรุณาแจ้งรหัสนี้แก่แผนกที่เกี่ยวข้องเพื่ออนุมัติการจอง</p>
+      </div>
+      <div id="success-details" style="margin-top:16px"></div>
+      <div style="margin-top:20px;text-align:center">
+        <button class="btn bp" onclick="newBooking()">📋 จองรถอีกครั้ง</button>
+        <button class="btn bo" style="margin-left:8px" onclick="showPage('admin')">🗂️ ดูประวัติการจอง</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="booking-form-wrapper">
+    <div class="card">
+      <div class="ct">ข้อมูลผู้จอง</div>
+      <form id="bookingForm" onsubmit="handleSubmit(event)">
+        <div class="fg">
+          <div class="fl"><label>ชื่อ-นามสกุล <span>*</span></label><input class="fc" id="f-name" type="text" placeholder="กรอกชื่อ-นามสกุล" required></div>
+          <div class="fl"><label>แผนก / ฝ่าย <span>*</span></label>
+            <select class="fc" id="f-dept" required>
+              <option value="">-- เลือกแผนก --</option>
+              <option>ฝ่ายบริหาร</option><option>ฝ่ายการตลาด</option><option>ฝ่ายขาย</option>
+              <option>ฝ่ายบัญชี</option><option>ฝ่ายทรัพยากรบุคคล</option><option>ฝ่ายปฏิบัติการ</option>
+              <option>ฝ่ายเทคโนโลยีสารสนเทศ</option><option>ฝ่ายกฎหมาย</option><option>อื่นๆ</option>
+            </select>
+          </div>
+          <div class="fl"><label>เบอร์โทรศัพท์ <span>*</span></label><input class="fc" id="f-phone" type="tel" placeholder="0XX-XXX-XXXX" required></div>
+          <div class="fl"><label>จำนวนผู้โดยสาร (รวมคนขับ) <span>*</span></label>
+            <select class="fc" id="f-pax" required>
+              <option value="">-- เลือก --</option>
+              <option value="1">1 คน</option><option value="2">2 คน</option><option value="3">3 คน</option>
+              <option value="4">4 คน</option><option value="5">5 คน</option><option value="6">6 คน</option><option value="7">7 คน (SUV)</option>
+            </select>
+          </div>
+          <div class="fl"><label>วันที่เริ่มใช้รถ <span>*</span></label><input class="fc" id="f-sd" type="date" required></div>
+          <div class="fl"><label>เวลาเริ่มใช้รถ <span>*</span></label><input class="fc" id="f-st" type="time" required></div>
+          <div class="fl"><label>วันที่คืนรถ <span>*</span></label><input class="fc" id="f-ed" type="date" required></div>
+          <div class="fl"><label>เวลาคืนรถ <span>*</span></label><input class="fc" id="f-et" type="time" required></div>
+          <div class="fl full"><label>ปลายทาง / สถานที่ <span>*</span></label><input class="fc" id="f-dest" type="text" placeholder="ระบุสถานที่หรือเส้นทาง" required></div>
+          <div class="fl full"><label>วัตถุประสงค์การเดินทาง <span>*</span></label>
+            <select class="fc" id="f-purpose" required>
+              <option value="">-- เลือก --</option>
+              <option>ติดต่องานลูกค้า</option><option>ประชุมภายนอก</option><option>รับส่งผู้บริหาร</option>
+              <option>ขนส่งเอกสาร/สิ่งของ</option><option>อบรม/สัมมนา</option><option>ตรวจสอบไซต์งาน</option>
+              <option>ราชการ</option><option>อื่นๆ</option>
+            </select>
+          </div>
+          <div class="fl full"><label>หมายเหตุเพิ่มเติม</label><textarea class="fc" id="f-notes" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea></div>
+        </div>
+
+        <div style="margin-top:24px">
+          <div class="ct" style="margin-bottom:14px">เลือกยานพาหนะ <span style="color:#e74c3c;font-size:14px">*</span></div>
+          <div class="cg" id="carGrid"></div>
+        </div>
+
+        <div style="margin-top:22px;display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" class="btn bg" onclick="resetForm()">🔄 ล้างข้อมูล</button>
+          <button type="submit" class="btn bp" style="min-width:160px">✅ ยื่นคำขอจอง</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD PAGE ===== -->
+<div class="page" id="page-dashboard">
+  <div class="ph"><h2>📊 Dashboard ภาพรวมการจองรถ</h2><p>สรุปข้อมูลการใช้งานยานพาหนะของบริษัท</p></div>
+
+  <div class="g4" style="margin-bottom:22px">
+    <div class="sc"><div class="si blue">📋</div><div><div class="sv" id="d-total">0</div><div class="sl">การจองทั้งหมด</div></div></div>
+    <div class="sc"><div class="si yellow">⏳</div><div><div class="sv" id="d-pend">0</div><div class="sl">รอการอนุมัติ</div></div></div>
+    <div class="sc"><div class="si green">✅</div><div><div class="sv" id="d-appr">0</div><div class="sl">อนุมัติแล้ว / กำลังใช้งาน</div></div></div>
+    <div class="sc"><div class="si purple">🏁</div><div><div class="sv" id="d-comp">0</div><div class="sl">เสร็จสิ้น</div></div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card"><div class="ct">📈 การจองรายเดือน (6 เดือนล่าสุด)</div><div style="height:270px"><canvas id="ch-month"></canvas></div></div>
+    <div class="card"><div class="ct">🚗 การใช้งานแยกตามรถ</div><div style="height:270px"><canvas id="ch-car"></canvas></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">📊 สถานะการจองทั้งหมด</div><div style="height:260px"><canvas id="ch-status"></canvas></div></div>
+    <div class="card"><div class="ct">🏢 การใช้งานแยกตามแผนก</div><div style="height:260px"><canvas id="ch-dept"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">🚘 สถานะรถปัจจุบัน</div>
+    <div class="g4" id="carStatusGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">🕐 การจองล่าสุด</div>
+    <div class="tw">
+      <table><thead><tr><th>รหัส</th><th>ผู้จอง</th><th>รถ</th><th>วันที่เริ่ม</th><th>ปลายทาง</th><th>สถานะ</th></tr></thead>
+      <tbody id="recentTbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PAGE ===== -->
+<div class="page" id="page-admin">
+  <div class="ph"><h2>🗂️ ประวัติและจัดการการจอง</h2><p>ดูและจัดการคำขอจองรถทั้งหมดในระบบ</p></div>
+  <div class="card">
+    <div class="fb">
+      <div class="sw"><span class="si2">🔍</span><input class="si-input" id="a-search" placeholder="ค้นหาชื่อ, แผนก, ปลายทาง, รหัส..." oninput="renderAdmin()"></div>
+      <select class="fs" id="a-status" onchange="renderAdmin()">
+        <option value="">สถานะทั้งหมด</option><option value="pending">รอการอนุมัติ</option>
+        <option value="approved">อนุมัติแล้ว</option><option value="completed">เสร็จสิ้น</option>
+        <option value="rejected">ไม่อนุมัติ</option><option value="cancelled">ยกเลิก</option>
+      </select>
+      <select class="fs" id="a-car" onchange="renderAdmin()"><option value="">รถทุกคัน</option></select>
+      <select class="fs" id="a-month" onchange="renderAdmin()"><option value="">ทุกเดือน</option></select>
+      <button class="btn bo sm" onclick="exportCSV()">📥 ส่งออก CSV</button>
+    </div>
+    <div class="tw">
+      <table><thead><tr><th>รหัส</th><th>ผู้จอง</th><th>แผนก</th><th>รถ</th><th>วันเริ่ม</th><th>วันคืน</th><th>ปลายทาง</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+      <tbody id="adminTbody"></tbody></table>
+    </div>
+    <div id="adminEmpty" class="es" style="display:none"><div>📭</div><p>ไม่พบข้อมูลการจอง</p></div>
+    <div style="margin-top:10px;font-size:12px;color:#6b7280" id="adminCount"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- DETAIL MODAL -->
+<div class="mo" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="md">
+    <div class="mh"><div class="mt">📄 รายละเอียดการจอง</div><button class="mc" onclick="closeModal()">✕</button></div>
+    <div id="modalContent"></div>
+    <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap" id="modalActions"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const CARS = [
+  {id:'c1',brand:'Toyota',  model:'Camry 2.5G',        year:2024,color:'ขาวมุก',  plate:'กข 1234 กทม.',seats:5,emoji:'🚗', img:'car_camry.jpg'},
+  {id:'c2',brand:'Honda',   model:'CR-V EL 4WD',       year:2023,color:'ดำ',      plate:'ขค 5678 กทม.',seats:5,emoji:'🚙', img:'car_crv.jpg'},
+  {id:'c3',brand:'Toyota',  model:'Fortuner Legender',  year:2024,color:'เงิน',   plate:'คง 9012 กทม.',seats:7,emoji:'🚐', img:'car_fortuner.jpg'},
+  {id:'c4',brand:'Isuzu',   model:'D-Max Hi-Lander',   year:2023,color:'น้ำเงิน',plate:'งจ 3456 กทม.',seats:5,emoji:'🛻', img:'car_dmax.jpg'},
+];
+
+let bookings = JSON.parse(localStorage.getItem('carBookings')||'[]');
+let selCar = null;
+let charts = {};
+
+const CAR_SVGS = {
+  // Toyota Camry 2.5G – Pearl White Sedan
+  c1:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 140"><ellipse cx="140" cy="124" rx="102" ry="8" fill="rgba(0,0,0,.13)"/><path d="M20,82 L20,96 Q20,103 30,103 L250,103 Q258,103 258,96 L258,82 Z" fill="#F0EFEB" stroke="#D3D2CE" stroke-width="1.5"/><path d="M65,82 Q74,52 94,44 L186,44 Q212,47 215,82 Z" fill="#F0EFEB" stroke="#D3D2CE" stroke-width="1.5"/><path d="M212,82 Q208,58 193,46 L188,44 L190,82 Z" fill="#C4DEED" opacity=".8"/><path d="M68,82 Q74,56 94,44 L98,44 L96,82 Z" fill="#C4DEED" opacity=".8"/><rect x="98" y="46" width="90" height="35" rx="3" fill="#CEE8F4" opacity=".75"/><line x1="98" y1="44" x2="96" y2="103" stroke="#C8C7C3" stroke-width="1"/><line x1="148" y1="44" x2="148" y2="103" stroke="#C8C7C3" stroke-width="1"/><line x1="188" y1="44" x2="190" y2="103" stroke="#C8C7C3" stroke-width="1"/><rect x="110" y="78" width="13" height="3" rx="1.5" fill="#C5C4C0"/><rect x="155" y="78" width="13" height="3" rx="1.5" fill="#C5C4C0"/><rect x="250" y="84" width="10" height="9" rx="2" fill="#FFFDE0" stroke="#CCC" stroke-width="1"/><rect x="20" y="84" width="6" height="9" rx="1" fill="#FF3A3A" opacity=".85"/><path d="M46,103 Q46,83 74,83 Q102,83 102,103" fill="#E5E4DF" stroke="#C5C4BF" stroke-width="1.5"/><path d="M174,103 Q174,83 202,83 Q230,83 230,103" fill="#E5E4DF" stroke="#C5C4BF" stroke-width="1.5"/><circle cx="74" cy="108" r="22" fill="#111"/><circle cx="74" cy="108" r="14" fill="#303030"/><circle cx="74" cy="108" r="9" fill="#727272"/><circle cx="74" cy="108" r="4" fill="#A8A8A8"/><line x1="60" y1="108" x2="88" y2="108" stroke="#585858" stroke-width="1.2"/><line x1="74" y1="94" x2="74" y2="122" stroke="#585858" stroke-width="1.2"/><line x1="64" y1="98" x2="84" y2="118" stroke="#585858" stroke-width="1.2"/><line x1="84" y1="98" x2="64" y2="118" stroke="#585858" stroke-width="1.2"/><circle cx="202" cy="108" r="22" fill="#111"/><circle cx="202" cy="108" r="14" fill="#303030"/><circle cx="202" cy="108" r="9" fill="#727272"/><circle cx="202" cy="108" r="4" fill="#A8A8A8"/><line x1="188" y1="108" x2="216" y2="108" stroke="#585858" stroke-width="1.2"/><line x1="202" y1="94" x2="202" y2="122" stroke="#585858" stroke-width="1.2"/><line x1="192" y1="98" x2="212" y2="118" stroke="#585858" stroke-width="1.2"/><line x1="212" y1="98" x2="192" y2="118" stroke="#585858" stroke-width="1.2"/></svg>`,
+
+  // Honda CR-V EL 4WD – Black Compact SUV
+  c2:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 140"><ellipse cx="140" cy="124" rx="102" ry="8" fill="rgba(0,0,0,.16)"/><path d="M22,76 L22,97 Q22,105 32,105 L248,105 Q256,105 256,97 L256,76 Z" fill="#1C1C1C" stroke="#0C0C0C" stroke-width="1.5"/><path d="M60,76 L64,44 L84,36 L196,36 L214,47 L217,76 Z" fill="#1C1C1C" stroke="#0C0C0C" stroke-width="1.5"/><path d="M215,76 L211,52 L197,38 L193,37 L195,76 Z" fill="#2C4A5C" opacity=".78"/><path d="M63,76 L67,50 L84,37 L88,37 L86,76 Z" fill="#2C4A5C" opacity=".78"/><rect x="88" y="39" width="105" height="36" rx="2" fill="#344C5A" opacity=".72"/><line x1="88" y1="36" x2="86" y2="105" stroke="#0A0A0A" stroke-width="2.5"/><line x1="143" y1="36" x2="143" y2="105" stroke="#252525" stroke-width="1.5"/><line x1="193" y1="36" x2="195" y2="105" stroke="#0A0A0A" stroke-width="2.5"/><rect x="248" y="79" width="10" height="11" rx="1" fill="#FFFFAA" stroke="#444" stroke-width="1"/><rect x="248" y="78" width="10" height="2" rx="1" fill="#FFFFCC"/><rect x="22" y="79" width="7" height="11" rx="1" fill="#CC1A1A" opacity=".9"/><line x1="22" y1="96" x2="256" y2="96" stroke="#2E2E2E" stroke-width="1.5"/><path d="M44,105 Q44,83 74,83 Q104,83 104,105" fill="#0C0C0C" stroke="#1E1E1E" stroke-width="1.5"/><path d="M172,105 Q172,83 202,83 Q232,83 232,105" fill="#0C0C0C" stroke="#1E1E1E" stroke-width="1.5"/><circle cx="74" cy="109" r="22" fill="#080808"/><circle cx="74" cy="109" r="15" fill="#222"/><circle cx="74" cy="109" r="9" fill="#555"/><circle cx="74" cy="109" r="4" fill="#888"/><line x1="60" y1="109" x2="88" y2="109" stroke="#3A3A3A" stroke-width="1.2"/><line x1="74" y1="95" x2="74" y2="123" stroke="#3A3A3A" stroke-width="1.2"/><line x1="64" y1="99" x2="84" y2="119" stroke="#3A3A3A" stroke-width="1.2"/><line x1="84" y1="99" x2="64" y2="119" stroke="#3A3A3A" stroke-width="1.2"/><circle cx="202" cy="109" r="22" fill="#080808"/><circle cx="202" cy="109" r="15" fill="#222"/><circle cx="202" cy="109" r="9" fill="#555"/><circle cx="202" cy="109" r="4" fill="#888"/><line x1="188" y1="109" x2="216" y2="109" stroke="#3A3A3A" stroke-width="1.2"/><line x1="202" y1="95" x2="202" y2="123" stroke="#3A3A3A" stroke-width="1.2"/><line x1="192" y1="99" x2="212" y2="119" stroke="#3A3A3A" stroke-width="1.2"/><line x1="212" y1="99" x2="192" y2="119" stroke="#3A3A3A" stroke-width="1.2"/></svg>`,
+
+  // Toyota Fortuner Legender – Silver Large SUV
+  c3:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 145"><ellipse cx="140" cy="128" rx="104" ry="9" fill="rgba(0,0,0,.14)"/><path d="M18,72 L18,97 Q18,107 30,107 L250,107 Q260,107 260,97 L260,72 Z" fill="#C2C2C2" stroke="#A6A6A6" stroke-width="1.5"/><path d="M60,72 L62,38 L82,30 L198,30 L216,42 L220,72 Z" fill="#C2C2C2" stroke="#A6A6A6" stroke-width="1.5"/><path d="M218,72 L214,46 L200,32 L196,30 L198,72 Z" fill="#8AAEBC" opacity=".72"/><path d="M62,72 L64,42 L82,30 L86,30 L84,72 Z" fill="#8AAEBC" opacity=".72"/><rect x="86" y="33" width="110" height="38" rx="2" fill="#9DBECE" opacity=".68"/><line x1="86" y1="30" x2="84" y2="107" stroke="#A0A0A0" stroke-width="2.5"/><line x1="146" y1="30" x2="146" y2="107" stroke="#B2B2B2" stroke-width="1.5"/><line x1="196" y1="30" x2="198" y2="107" stroke="#A0A0A0" stroke-width="2.5"/><rect x="18" y="98" width="242" height="5" rx="2" fill="#A0A0A0" stroke="#909090" stroke-width="1"/><rect x="65" y="29" width="150" height="4" rx="2" fill="#989898"/><rect x="80" y="25" width="4" height="8" rx="2" fill="#989898"/><rect x="196" y="25" width="4" height="8" rx="2" fill="#989898"/><rect x="250" y="76" width="12" height="12" rx="2" fill="#FFFFCC" stroke="#AAA" stroke-width="1"/><line x1="250" y1="75" x2="262" y2="75" stroke="#FFF0A0" stroke-width="2"/><rect x="18" y="76" width="7" height="12" rx="1" fill="#CC1A1A" opacity=".88"/><path d="M38,107 Q38,84 74,84 Q110,84 110,107" fill="#AAAAAA" stroke="#989898" stroke-width="1.5"/><path d="M166,107 Q166,84 202,84 Q238,84 238,107" fill="#AAAAAA" stroke="#989898" stroke-width="1.5"/><circle cx="74" cy="113" r="24" fill="#090909"/><circle cx="74" cy="113" r="17" fill="#252525"/><circle cx="74" cy="113" r="11" fill="#606060"/><circle cx="74" cy="113" r="5" fill="#939393"/><line x1="58" y1="113" x2="90" y2="113" stroke="#484848" stroke-width="1.3"/><line x1="74" y1="97" x2="74" y2="129" stroke="#484848" stroke-width="1.3"/><line x1="63" y1="102" x2="85" y2="124" stroke="#484848" stroke-width="1.3"/><line x1="85" y1="102" x2="63" y2="124" stroke="#484848" stroke-width="1.3"/><circle cx="202" cy="113" r="24" fill="#090909"/><circle cx="202" cy="113" r="17" fill="#252525"/><circle cx="202" cy="113" r="11" fill="#606060"/><circle cx="202" cy="113" r="5" fill="#939393"/><line x1="186" y1="113" x2="218" y2="113" stroke="#484848" stroke-width="1.3"/><line x1="202" y1="97" x2="202" y2="129" stroke="#484848" stroke-width="1.3"/><line x1="191" y1="102" x2="213" y2="124" stroke="#484848" stroke-width="1.3"/><line x1="213" y1="102" x2="191" y2="124" stroke="#484848" stroke-width="1.3"/></svg>`,
+
+  // Isuzu D-Max Hi-Lander – Blue Pickup Truck
+  c4:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 294 142"><ellipse cx="147" cy="126" rx="110" ry="8" fill="rgba(0,0,0,.15)"/><rect x="16" y="62" width="108" height="40" rx="3" fill="#1A4D96" stroke="#133D7A" stroke-width="1.5"/><rect x="20" y="64" width="100" height="8" fill="#133D7A"/><line x1="16" y1="80" x2="124" y2="80" stroke="#133D7A" stroke-width="1"/><line x1="16" y1="92" x2="124" y2="92" stroke="#133D7A" stroke-width=".8"/><rect x="16" y="74" width="5" height="11" rx="1" fill="#CC1A1A" opacity=".88"/><rect x="124" y="62" width="6" height="40" fill="#133D7A"/><path d="M130,68 L130,97 Q130,105 140,105 L266,105 Q274,105 274,97 L274,68 Z" fill="#1A4D96" stroke="#133D7A" stroke-width="1.5"/><path d="M138,68 L142,36 L160,28 L254,28 L272,46 L274,68 Z" fill="#1A4D96" stroke="#133D7A" stroke-width="1.5"/><path d="M272,68 L268,50 L255,30 L251,28 L253,68 Z" fill="#3A70A8" opacity=".75"/><rect x="143" y="31" width="108" height="35" rx="2" fill="#4A80A8" opacity=".7"/><rect x="130" y="44" width="11" height="20" rx="2" fill="#3A6A90" opacity=".65"/><line x1="143" y1="28" x2="141" y2="105" stroke="#133D7A" stroke-width="2.5"/><line x1="204" y1="28" x2="204" y2="105" stroke="#1A4D96" stroke-width="1.5"/><line x1="251" y1="28" x2="253" y2="105" stroke="#133D7A" stroke-width="2.5"/><rect x="266" y="72" width="10" height="11" rx="2" fill="#FFFFCC" stroke="#AAA" stroke-width="1"/><line x1="266" y1="71" x2="276" y2="71" stroke="#FFF5AA" stroke-width="1.8"/><rect x="136" y="101" width="134" height="4" rx="2" fill="#133D7A"/><path d="M38,103 Q38,82 68,82 Q98,82 98,103" fill="#133D7A" stroke="#1A4D96" stroke-width="1.5"/><path d="M202,103 Q202,82 232,82 Q262,82 262,103" fill="#133D7A" stroke="#1A4D96" stroke-width="1.5"/><circle cx="68" cy="108" r="23" fill="#080808"/><circle cx="68" cy="108" r="16" fill="#1E1E1E"/><circle cx="68" cy="108" r="10" fill="#585858"/><circle cx="68" cy="108" r="5" fill="#8A8A8A"/><line x1="53" y1="108" x2="83" y2="108" stroke="#3C3C3C" stroke-width="1.3"/><line x1="68" y1="93" x2="68" y2="123" stroke="#3C3C3C" stroke-width="1.3"/><line x1="57" y1="97" x2="79" y2="119" stroke="#3C3C3C" stroke-width="1.3"/><line x1="79" y1="97" x2="57" y2="119" stroke="#3C3C3C" stroke-width="1.3"/><circle cx="232" cy="108" r="23" fill="#080808"/><circle cx="232" cy="108" r="16" fill="#1E1E1E"/><circle cx="232" cy="108" r="10" fill="#585858"/><circle cx="232" cy="108" r="5" fill="#8A8A8A"/><line x1="217" y1="108" x2="247" y2="108" stroke="#3C3C3C" stroke-width="1.3"/><line x1="232" y1="93" x2="232" y2="123" stroke="#3C3C3C" stroke-width="1.3"/><line x1="221" y1="97" x2="243" y2="119" stroke="#3C3C3C" stroke-width="1.3"/><line x1="243" y1="97" x2="221" y2="119" stroke="#3C3C3C" stroke-width="1.3"/></svg>`
+};
+
+if(!bookings.length) seedData();
+
+function seedData(){
+  const now = new Date();
+  const names=['สมชาย ใจดี','วิภา รักษา','ประเสริฐ มีสุข','นันทิดา สว่าง','อภิชาต ทองดี','รัตนา เพชรงาม','วรวุฒิ แสงทอง','ปิยะ นาคา','กนกวรรณ บุญมา','ธนวัต ศรีสุข','มาลี หวังดี','สุรชัย บุญเรือง'];
+  const depts=['ฝ่ายบริหาร','ฝ่ายการตลาด','ฝ่ายขาย','ฝ่ายบัญชี','ฝ่ายปฏิบัติการ','ฝ่ายทรัพยากรบุคคล'];
+  const dests=['บริษัท ABC จำกัด - สีลม','ประชุม โรงแรมแกรนด์ ราชดำเนิน','ตรวจสอบไซต์งาน นนทบุรี','ส่งเอกสาร กรมพัฒนาธุรกิจ','อบรม ศูนย์ประชุมแห่งชาติ','รับผู้บริหาร สนามบินสุวรรณภูมิ','ลูกค้า - เขตจตุจักร'];
+  const purposes=['ติดต่องานลูกค้า','ประชุมภายนอก','รับส่งผู้บริหาร','ขนส่งเอกสาร/สิ่งของ','อบรม/สัมมนา','ตรวจสอบไซต์งาน'];
+  for(let i=0;i<38;i++){
+    const offset=Math.floor(Math.random()*100)-15;
+    const sd=new Date(now); sd.setDate(sd.getDate()+offset);
+    const ed=new Date(sd); ed.setHours(ed.getHours()+Math.floor(Math.random()*7)+2);
+    const car=CARS[Math.floor(Math.random()*CARS.length)];
+    let status='completed';
+    if(offset>3) status='pending';
+    else if(offset>-1) status='approved';
+    else if(Math.random()<.12) status='rejected';
+    else if(Math.random()<.08) status='cancelled';
+    bookings.push({
+      id:'BK'+String(1000+i+1).padStart(5,'0'),
+      name:names[i%names.length],dept:depts[i%depts.length],
+      phone:'0'+String(Math.floor(Math.random()*900000000)+100000000),
+      carId:car.id,
+      startDate:sd.toISOString().split('T')[0],
+      startTime:['08:00','09:00','10:00','13:00','14:00'][i%5],
+      endDate:ed.toISOString().split('T')[0],
+      endTime:['12:00','15:00','17:00','18:00','20:00'][i%5],
+      destination:dests[i%dests.length],purpose:purposes[i%purposes.length],
+      passengers:String(Math.floor(Math.random()*4)+1),
+      status,notes:i%4===0?'กรุณาเติมน้ำมันให้เต็มถัง':'',
+      createdAt:new Date(sd.getTime()-86400000*(Math.floor(Math.random()*3)+1)).toISOString()
+    });
+  }
+  saveData();
+}
+
+function saveData(){ localStorage.setItem('carBookings',JSON.stringify(bookings)); }
+
+function genId(){
+  const mx=bookings.reduce((m,b)=>{const n=parseInt(b.id.slice(2))||0;return n>m?n:m},1000);
+  return 'BK'+String(mx+1).padStart(5,'0');
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const idx={booking:0,dashboard:1,admin:2};
+  document.querySelectorAll('.nb')[idx[p]].classList.add('active');
+  if(p==='dashboard') renderDashboard();
+  if(p==='admin'){ populateFilters(); renderAdmin(); }
+  if(p==='booking') renderCarGrid();
+}
+
+// ── BOOKING FORM ─────────────────────────────────────────────────
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('f-sd').min = today;
+document.getElementById('f-ed').min = today;
+document.getElementById('f-sd').addEventListener('change',function(){document.getElementById('f-ed').min=this.value;renderCarGrid();});
+['f-sd','f-st','f-ed','f-et'].forEach(id=>document.getElementById(id).addEventListener('change',renderCarGrid));
+
+function renderCarGrid(){
+  const sd=document.getElementById('f-sd').value;
+  const st=document.getElementById('f-st').value;
+  const ed=document.getElementById('f-ed').value;
+  const et=document.getElementById('f-et').value;
+  document.getElementById('carGrid').innerHTML=CARS.map(car=>{
+    const busy=isCarBusy(car.id,sd,st,ed,et);
+    const sel=selCar===car.id;
+    return `<div class="cc ${sel?'sel':''} ${busy?'busy':''}" onclick="${busy?'':'selectCar(\''+car.id+'\')'}" >
+      <div class="car-img"><img src="${car.img}" alt="${car.brand} ${car.model}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;font-size:48px\'>${car.emoji}</div>'"></div>
+      <div class="cn">${car.brand} ${car.model} <span style="font-size:11px;font-weight:400;color:#888">${car.year}</span></div>
+      <div class="cp">🔖 ${car.plate} &nbsp;|&nbsp; <span style="color:#555">สี${car.color}</span></div>
+      <div class="cp">👥 ${car.seats} ที่นั่ง</div>
+      <span class="cbadge ${busy?'busy-b':'avail'}">${busy?'🔴 ไม่ว่าง':'🟢 ว่าง'}</span>
+    </div>`;
+  }).join('');
+}
+
+function isCarBusy(carId,sd,st,ed,et,skipId=null){
+  if(!sd||!ed) return false;
+  const ns=new Date(`${sd}T${st||'00:00'}`);
+  const ne=new Date(`${ed}T${et||'23:59'}`);
+  return bookings.some(b=>{
+    if(b.id===skipId) return false;
+    if(b.carId!==carId) return false;
+    if(!['approved','pending'].includes(b.status)) return false;
+    const bs=new Date(`${b.startDate}T${b.startTime}`);
+    const be=new Date(`${b.endDate}T${b.endTime}`);
+    return ns<be && ne>bs;
+  });
+}
+
+function selectCar(id){ selCar=id; renderCarGrid(); }
+
+function handleSubmit(e){
+  e.preventDefault();
+  if(!selCar){ toast('กรุณาเลือกรถที่ต้องการจอง','error'); return; }
+  const sd=document.getElementById('f-sd').value, st=document.getElementById('f-st').value;
+  const ed=document.getElementById('f-ed').value, et=document.getElementById('f-et').value;
+  if(new Date(`${ed}T${et}`)<=new Date(`${sd}T${st}`)){ toast('วันที่/เวลาคืนรถต้องหลังจากวันเริ่มใช้','error'); return; }
+  if(isCarBusy(selCar,sd,st,ed,et)){ toast('รถคันนี้ถูกจองในช่วงเวลานี้แล้ว กรุณาเลือกรถอื่น','error'); return; }
+  const b={
+    id:genId(),
+    name:document.getElementById('f-name').value,
+    dept:document.getElementById('f-dept').value,
+    phone:document.getElementById('f-phone').value,
+    carId:selCar, startDate:sd,startTime:st,endDate:ed,endTime:et,
+    destination:document.getElementById('f-dest').value,
+    purpose:document.getElementById('f-purpose').value,
+    passengers:document.getElementById('f-pax').value,
+    notes:document.getElementById('f-notes').value,
+    status:'pending', createdAt:new Date().toISOString()
+  };
+  bookings.unshift(b); saveData();
+  toast(`ยื่นคำขอจองสำเร็จ! รหัส: ${b.id}`,'success');
+  showSuccess(b);
+}
+
+function showSuccess(b){
+  const car=CARS.find(c=>c.id===b.carId);
+  document.getElementById('success-id').textContent=b.id;
+  document.getElementById('success-details').innerHTML=`
+    <div class="dr"><div class="dl">รถที่จอง</div><div class="dv">${car.emoji} ${car.brand} ${car.model} (${car.plate})</div></div>
+    <div class="dr"><div class="dl">ผู้จอง</div><div class="dv">${b.name} — ${b.dept}</div></div>
+    <div class="dr"><div class="dl">ช่วงเวลา</div><div class="dv">${dateTH(b.startDate)} ${b.startTime} น. — ${dateTH(b.endDate)} ${b.endTime} น.</div></div>
+    <div class="dr"><div class="dl">ปลายทาง</div><div class="dv">${b.destination}</div></div>
+    <div class="dr"><div class="dl">วัตถุประสงค์</div><div class="dv">${b.purpose}</div></div>`;
+  document.getElementById('booking-success').style.display='block';
+  document.getElementById('booking-form-wrapper').style.display='none';
+}
+
+function newBooking(){
+  selCar=null;
+  document.getElementById('bookingForm').reset();
+  document.getElementById('booking-success').style.display='none';
+  document.getElementById('booking-form-wrapper').style.display='block';
+  renderCarGrid();
+}
+
+function resetForm(){ selCar=null; document.getElementById('bookingForm').reset(); renderCarGrid(); }
+
+// ── DASHBOARD ────────────────────────────────────────────────────
+function renderDashboard(){
+  document.getElementById('d-total').textContent=bookings.length;
+  document.getElementById('d-pend').textContent=bookings.filter(b=>b.status==='pending').length;
+  document.getElementById('d-appr').textContent=bookings.filter(b=>b.status==='approved').length;
+  document.getElementById('d-comp').textContent=bookings.filter(b=>b.status==='completed').length;
+
+  // Car status grid
+  const now=new Date();
+  document.getElementById('carStatusGrid').innerHTML=CARS.map(car=>{
+    const active=bookings.find(b=>b.carId===car.id&&b.status==='approved'&&now>=new Date(`${b.startDate}T${b.startTime}`)&&now<=new Date(`${b.endDate}T${b.endTime}`));
+    const next=bookings.filter(b=>b.carId===car.id&&['approved','pending'].includes(b.status)&&new Date(`${b.startDate}T${b.startTime}`)>now).sort((a,b)=>new Date(`${a.startDate}T${a.startTime}`)-new Date(`${b.startDate}T${b.startTime}`))[0];
+    const total=bookings.filter(b=>b.carId===car.id&&b.status!=='cancelled').length;
+    return `<div class="csc" style="border-top:4px solid ${active?'#e74c3c':'#27ae60'}">
+      <div style="font-size:28px;margin-bottom:6px">${car.emoji}</div>
+      <div style="font-weight:700;color:#1e3a5f">${car.brand} ${car.model}</div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px">${car.plate} | ปี ${car.year}</div>
+      <span class="cbadge ${active?'busy-b':'avail'}" style="margin-bottom:6px">${active?'🔴 กำลังใช้งาน':'🟢 ว่างพร้อมใช้'}</span>
+      ${active?`<div style="font-size:11px;color:#666;margin-top:4px">โดย: ${active.name}</div>`:''}
+      ${next&&!active?`<div style="font-size:11px;color:#f39c12;margin-top:4px">จองถัดไป: ${dateTH(next.startDate)}</div>`:''}
+      <div style="font-size:12px;color:#666;margin-top:8px">ใช้งานทั้งหมด <strong>${total}</strong> ครั้ง</div>
+    </div>`;
+  }).join('');
+
+  // Recent table
+  const rec=[...bookings].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
+  document.getElementById('recentTbody').innerHTML=rec.map(b=>{
+    const car=CARS.find(c=>c.id===b.carId);
+    return `<tr><td><span class="bid">${b.id}</span></td><td>${b.name}</td><td>${car?car.emoji+' '+car.brand+' '+car.model:'-'}</td><td>${dateTH(b.startDate)} ${b.startTime}</td><td>${b.destination}</td><td>${badge(b.status)}</td></tr>`;
+  }).join('');
+
+  buildCharts();
+}
+
+function buildCharts(){
+  Object.values(charts).forEach(c=>c&&c.destroy()); charts={};
+  const months=[],mdata=[];
+  for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;months.push(d.toLocaleString('th-TH',{month:'short'}));mdata.push(bookings.filter(b=>b.startDate.startsWith(k)).length);}
+  charts.m=new Chart(document.getElementById('ch-month').getContext('2d'),{type:'bar',data:{labels:months,datasets:[{label:'การจอง',data:mdata,backgroundColor:'rgba(41,128,185,.8)',borderColor:'#2980b9',borderWidth:2,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+
+  const cdata=CARS.map(c=>bookings.filter(b=>b.carId===c.id).length);
+  charts.c=new Chart(document.getElementById('ch-car').getContext('2d'),{type:'doughnut',data:{labels:CARS.map(c=>c.brand+' '+c.model),datasets:[{data:cdata,backgroundColor:['#3498db','#e74c3c','#2ecc71','#f39c12'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:14}}}}});
+
+  const sdata=['pending','approved','completed','rejected','cancelled'].map(s=>bookings.filter(b=>b.status===s).length);
+  charts.s=new Chart(document.getElementById('ch-status').getContext('2d'),{type:'pie',data:{labels:['รอการอนุมัติ','อนุมัติแล้ว','เสร็จสิ้น','ไม่อนุมัติ','ยกเลิก'],datasets:[{data:sdata,backgroundColor:['#f39c12','#27ae60','#3498db','#e74c3c','#95a5a6'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:14}}}}});
+
+  const depts=[...new Set(bookings.map(b=>b.dept))].filter(Boolean).sort((a,b)=>bookings.filter(x=>x.dept===b).length-bookings.filter(x=>x.dept===a).length).slice(0,7);
+  charts.d=new Chart(document.getElementById('ch-dept').getContext('2d'),{type:'bar',data:{labels:depts,datasets:[{label:'จำนวน',data:depts.map(d=>bookings.filter(b=>b.dept===d).length),backgroundColor:'rgba(231,76,60,.8)',borderColor:'#e74c3c',borderWidth:2,borderRadius:6}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}});
+}
+
+// ── ADMIN TABLE ──────────────────────────────────────────────────
+function populateFilters(){
+  const cf=document.getElementById('a-car');
+  cf.innerHTML='<option value="">รถทุกคัน</option>'+CARS.map(c=>`<option value="${c.id}">${c.brand} ${c.model}</option>`).join('');
+  const months=[...new Set(bookings.map(b=>b.startDate.substring(0,7)))].sort().reverse();
+  document.getElementById('a-month').innerHTML='<option value="">ทุกเดือน</option>'+months.map(m=>{const[y,mo]=m.split('-');return `<option value="${m}">${new Date(y,mo-1).toLocaleString('th-TH',{month:'long',year:'numeric'})}</option>`;}).join('');
+}
+
+function renderAdmin(){
+  const q=document.getElementById('a-search').value.toLowerCase();
+  const st=document.getElementById('a-status').value;
+  const car=document.getElementById('a-car').value;
+  const mo=document.getElementById('a-month').value;
+  let list=bookings.filter(b=>{
+    if(q&&!b.name.toLowerCase().includes(q)&&!b.dept.toLowerCase().includes(q)&&!b.destination.toLowerCase().includes(q)&&!b.id.toLowerCase().includes(q)) return false;
+    if(st&&b.status!==st) return false;
+    if(car&&b.carId!==car) return false;
+    if(mo&&!b.startDate.startsWith(mo)) return false;
+    return true;
+  }).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+  const empty=document.getElementById('adminEmpty');
+  const tbody=document.getElementById('adminTbody');
+  if(!list.length){tbody.innerHTML='';empty.style.display='block';document.getElementById('adminCount').textContent='';return;}
+  empty.style.display='none';
+  document.getElementById('adminCount').textContent=`แสดง ${list.length} รายการ จากทั้งหมด ${bookings.length} รายการ`;
+  tbody.innerHTML=list.map(b=>{
+    const car=CARS.find(c=>c.id===b.carId);
+    const acts=[];
+    if(b.status==='pending'){acts.push(`<button class="btn bs sm" title="อนุมัติ" onclick="setStatus('${b.id}','approved')">✅</button>`);acts.push(`<button class="btn bd sm" title="ไม่อนุมัติ" onclick="setStatus('${b.id}','rejected')">❌</button>`);}
+    if(b.status==='approved') acts.push(`<button class="btn bp sm" title="เสร็จสิ้น" onclick="setStatus('${b.id}','completed')">🏁</button>`);
+    if(['pending','approved'].includes(b.status)) acts.push(`<button class="btn bw sm" title="ยกเลิก" onclick="setStatus('${b.id}','cancelled')">🚫</button>`);
+    return `<tr>
+      <td><span class="bid">${b.id}</span></td>
+      <td><div style="font-weight:600">${b.name}</div><div style="font-size:11px;color:#888">${b.phone}</div></td>
+      <td>${b.dept}</td>
+      <td>${car?car.emoji+' '+car.brand+' '+car.model:'-'}</td>
+      <td>${dateTH(b.startDate)}<br><span style="font-size:11px;color:#888">${b.startTime} น.</span></td>
+      <td>${dateTH(b.endDate)}<br><span style="font-size:11px;color:#888">${b.endTime} น.</span></td>
+      <td style="max-width:150px">${b.destination}</td>
+      <td>${badge(b.status)}</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn bo sm" title="รายละเอียด" onclick="viewDetail('${b.id}')">👁</button>
+        ${acts.join('')}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function setStatus(id,status){
+  const b=bookings.find(x=>x.id===id); if(!b) return;
+  b.status=status; b.updatedAt=new Date().toISOString(); saveData();
+  const labels={approved:'อนุมัติ',rejected:'ไม่อนุมัติ',completed:'เสร็จสิ้น',cancelled:'ยกเลิก'};
+  toast(`${labels[status]}การจอง ${id} แล้ว`,'success');
+  renderAdmin();
+  if(document.getElementById('detailModal').classList.contains('show')) viewDetail(id);
+}
+
+// ── MODAL ────────────────────────────────────────────────────────
+function viewDetail(id){
+  const b=bookings.find(x=>x.id===id); if(!b) return;
+  const car=CARS.find(c=>c.id===b.carId);
+  document.getElementById('modalContent').innerHTML=`
+    <div style="background:#f0f7ff;border-radius:10px;overflow:hidden;margin-bottom:14px">
+      ${car?`<img src="${car.img}" alt="${car.brand} ${car.model}" style="width:100%;height:180px;object-fit:cover;object-position:center;display:block" onerror="this.style.display='none'">`:''}
+      <div style="padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div style="font-size:26px">${car?car.emoji:'🚗'}</div>
+        <div><div style="font-weight:700;font-size:15px;color:#1e3a5f">${car?car.brand+' '+car.model:'-'}</div>
+        <div style="font-size:12px;color:#888">${car?`ทะเบียน: ${car.plate} | สี: ${car.color} | ปี: ${car.year}`:''}</div></div>
+        <div style="margin-left:auto">${badge(b.status)}</div>
+      </div>
+    </div>
+    ${row('รหัสการจอง',`<span class="bid">${b.id}</span>`)}
+    ${row('ผู้จอง',b.name)}${row('แผนก',b.dept)}${row('เบอร์โทร',b.phone)}
+    ${row('วันเริ่มใช้',`${dateTH(b.startDate)} เวลา ${b.startTime} น.`)}
+    ${row('วันคืนรถ',`${dateTH(b.endDate)} เวลา ${b.endTime} น.`)}
+    ${row('ปลายทาง',b.destination)}${row('วัตถุประสงค์',b.purpose)}
+    ${row('จำนวนผู้โดยสาร',b.passengers+' คน')}
+    ${b.notes?row('หมายเหตุ',b.notes):''}
+    ${row('ยื่นคำขอเมื่อ',dtTH(b.createdAt))}`;
+  const acts=document.getElementById('modalActions');
+  acts.innerHTML='';
+  if(b.status==='pending'){acts.innerHTML+=`<button class="btn bs" onclick="setStatus('${b.id}','approved')">✅ อนุมัติ</button>`;acts.innerHTML+=`<button class="btn bd" onclick="setStatus('${b.id}','rejected')">❌ ไม่อนุมัติ</button>`;}
+  if(b.status==='approved') acts.innerHTML+=`<button class="btn bp" onclick="setStatus('${b.id}','completed')">🏁 ทำเครื่องหมายเสร็จสิ้น</button>`;
+  if(['pending','approved'].includes(b.status)) acts.innerHTML+=`<button class="btn bw" onclick="setStatus('${b.id}','cancelled')">🚫 ยกเลิก</button>`;
+  acts.innerHTML+=`<button class="btn bg" onclick="closeModal()">ปิด</button>`;
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeModal(){ document.getElementById('detailModal').classList.remove('show'); }
+function row(l,v){ return `<div class="dr"><div class="dl">${l}</div><div class="dv">${v}</div></div>`; }
+
+// ── EXPORT ───────────────────────────────────────────────────────
+function exportCSV(){
+  const q=document.getElementById('a-search').value.toLowerCase();
+  const st=document.getElementById('a-status').value;
+  const car=document.getElementById('a-car').value;
+  const mo=document.getElementById('a-month').value;
+  let list=bookings.filter(b=>{
+    if(q&&!b.name.toLowerCase().includes(q)&&!b.dept.toLowerCase().includes(q)) return false;
+    if(st&&b.status!==st) return false;
+    if(car&&b.carId!==car) return false;
+    if(mo&&!b.startDate.startsWith(mo)) return false;
+    return true;
+  });
+  const hdr=['รหัส','ชื่อ','แผนก','เบอร์','รถ','ทะเบียน','วันเริ่ม','เวลาเริ่ม','วันคืน','เวลาคืน','ปลายทาง','วัตถุประสงค์','ผู้โดยสาร','สถานะ','หมายเหตุ'];
+  const rows=list.map(b=>{const c=CARS.find(x=>x.id===b.carId);return[b.id,b.name,b.dept,b.phone,c?c.brand+' '+c.model:'',c?c.plate:'',b.startDate,b.startTime,b.endDate,b.endTime,b.destination,b.purpose,b.passengers,b.status,b.notes].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',');});
+  const csv='﻿'+[hdr.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=`car_bookings_${today}.csv`;a.click();
+  toast('ส่งออกไฟล์ CSV สำเร็จ','success');
+}
+
+// ── UTILITIES ────────────────────────────────────────────────────
+const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function dateTH(s){if(!s)return'-';const[y,m,d]=s.split('-');return `${+d} ${TM[+m-1]} ${+y+543}`;}
+function dtTH(iso){if(!iso)return'-';const d=new Date(iso);return `${d.getDate()} ${TM[d.getMonth()]} ${d.getFullYear()+543} เวลา ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} น.`;}
+
+function badge(s){
+  const m={pending:['sp','⏳ รอการอนุมัติ'],approved:['sa','✅ อนุมัติแล้ว'],completed:['sc2','🏁 เสร็จสิ้น'],rejected:['sr','❌ ไม่อนุมัติ'],cancelled:['sca','🚫 ยกเลิก']};
+  const[cls,lbl]=m[s]||['sca',s];
+  return `<span class="sb ${cls}">${lbl}</span>`;
+}
+
+function toast(msg,type='info'){
+  const t=document.createElement('div'); t.className=`toast ${type}`;
+  const ic={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  t.innerHTML=`<span>${ic[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('TC').appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+(function(){
+  const now=new Date();
+  document.getElementById('currentDate').textContent=`${now.getDate()} ${TM[now.getMonth()]} ${now.getFullYear()+543}`;
+  renderCarGrid();
+})();
+</script>
+</body>
+</html>
